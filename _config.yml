@@ -3,17 +3,17 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: 戴维的个人博客
-subtitle: 
+title: 戴伟的个人博客
+subtitle: 未曾遗忘的青春
 description:
 keywords:
-author: 未曾遗忘的青春
+author: 戴伟
 language:
 timezone:
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: http://yoursite.com
+url: https://ifmiss.github.io
 root: /
 permalink: :title/
 permalink_defaults:
@@ -78,4 +78,6 @@ theme: next
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
-  type:
+  type: git
+  repository: https://github.com/IFmiss/ifmiss.github.io.git
+  branch: master
