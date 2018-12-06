@@ -1,9 +1,9 @@
 ---
 layout: posts
 title: d-video.js 视频播放器
-date: 2018-12-03 10:02:47
+date: 2018-12-05 15:30:06
 categories: javascript
-tags: [js, video]
+tags: [js, video, 插件]
 ---
 
 ## 关于d-video.js
