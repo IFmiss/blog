@@ -13,8 +13,9 @@ timezone:
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: https://ifmiss.github.io
-root: /
+# url: https://ifmiss.github.io
+url: http://www.daiwei.org/hexo-blog
+root: /hexo-blog
 permalink: :title/
 permalink_defaults:
 
