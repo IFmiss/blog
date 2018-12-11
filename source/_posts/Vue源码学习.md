@@ -79,3 +79,24 @@ $mount 方法实际上会去调用 `mountComponent`
 
 ### _render
 Vue 的 _render 方法是实例的一个私有方法，它用来把实例渲染成一个虚拟 Node
+```js
+vnode = render.call(vm._renderProxy, vm.$createElement)
+```
+
+### Virtual DOM
+VNode对象
+Vue.js 中 Virtual DOM 是借鉴了一个开源库 [snabbdom](https://github.com/snabbdom/snabbdom) 的实现，然后加入了一些 Vue.js 特色的东西
+
+### 双向绑定原理
+通过Object.defineProperty()来劫持vue中各个属性的setter、getter
+代码来源: [vue面试常见问题小结](https://blog.csdn.net/connie_0217/article/details/79271508)
+```js
+Object.defineProperty(obj, "newKey", {
+  get:function (){return  ...} | undefined,//读取属性返回的值，即类似上面的value
+  set:function (value){ return ...} | undefined//设置属性的值
+  configurable: true | false
+  enumerable: true | false
+})
+```
+
+-- 未完待续 --
