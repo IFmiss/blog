@@ -84,7 +84,7 @@ vnode = render.call(vm._renderProxy, vm.$createElement)
 ```
 
 ### Virtual DOM
-VNode对象
+虚拟dom其实是一个VNode对象，是用JS对象记录一个dom节点的副本，当dom发生更改时候，先用虚拟dom进行diff，算出最小差异，然后再修改真实dom，通过递归的方式进行同级vnode的diff，最终实现整个DOM树的更新
 Vue.js 中 Virtual DOM 是借鉴了一个开源库 [snabbdom](https://github.com/snabbdom/snabbdom) 的实现，然后加入了一些 Vue.js 特色的东西
 
 ### 双向绑定原理
@@ -98,5 +98,10 @@ Object.defineProperty(obj, "newKey", {
   enumerable: true | false
 })
 ```
+结合发布订阅者模式
+通过监听器Observer，用来劫持并监听所有属性，如果有变动的，就通知订阅者
+通过订阅者Watcher，可以收到属性的变化通知并执行相应的函数，从而更新视图
+通过解析器Compile，可以扫描和解析每个节点的相关指令，并根据初始化模板数据以及初始化相应的订阅器
+![](Vue源码学习/mvvm.png)
 
 -- 未完待续 --
