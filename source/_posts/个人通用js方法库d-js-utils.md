@@ -1,8 +1,8 @@
 ---
 title: 个人通用js方法库d-js-utils
 date: 2018-12-10 12:56:53
-categories: javascript
-tags: [js, d-js-utils]
+categories: 通用组件或工具
+tags: [js]
 ---
 
 ![d-js-utils](个人通用js方法库d-js-utils/bg.png)
