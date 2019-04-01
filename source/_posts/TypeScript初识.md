@@ -17,7 +17,7 @@ a.toFixed()    // 此时则会报错 因为String对象下并没有toFixed方法
 ```
 如果使用typescript定义一个变量为number类型，则不会允许字符串替换之前的number变量，所以`很大程度上避免`了这个问题
 ```ts
-let a: number = 1
+let a: number = 1;
 a.toFixed()
 
 a = '1' // 此时就会提示错误，用户则会知道字符串无法替换，同样，也不存在toFixed方法
@@ -28,23 +28,23 @@ a = '1' // 此时就会提示错误，用户则会知道字符串无法替换，
 
 ### 变量类型定义
 ```ts
-const ts: number = 1
-const ts: string = 2
-const ts: any = 3
-const ts: boolean = true
-const ts: string[] = ['1', '2', '3']
-const ts: any[] = ['1', 1, undefind]
-const ts: number = [1, 2, 3]
-const ts: Array<number> = [1, 2, 3]
+const ts: number = 1;
+const ts: string = 2;
+const ts: any = 3;
+const ts: boolean = true;
+const ts: string[] = ['1', '2', '3'];
+const ts: any[] = ['1', 1, undefind];
+const ts: number = [1, 2, 3];
+const ts: Array<number> = [1, 2, 3];
 enum Type {
   YES,    // 0
   NO      // 1
 }
-function test (): void {}   // 没有返回值的方法
+function test (): void {};   // 没有返回值的方法
 function test (): number {
   return 1                  // 返回值为1的方法
-}
-const ts: null = null
+};
+const ts: null = null;
 
 // 对象的定义  比如定义一个学生，有性别，名字，年龄
 interface IUserInfo {
