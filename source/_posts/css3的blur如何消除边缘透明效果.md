@@ -3,7 +3,7 @@ layout: posts
 title: css3的blur如何消除边缘透明效果
 date: 2018-12-03 10:02:47
 categories: css相关
-tags: [css3]
+tags: [css]
 ---
 
 我们都知道css3的功能强大之处，大多数也用过blur的属性去模拟ios的磨砂效果，web页面中，ios有自带磨砂效果的css属性，那就是
