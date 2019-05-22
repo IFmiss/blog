@@ -42,6 +42,51 @@ sum(5, 1)
 ```
 这段代码就可以验证事件循环的实现方式，首先，会`执行同步代码`，`异步代码会被挂起`，不会执行，自上而下也就是当前栈中的所有任务执行完成之后，也就是`sum(5, 1)`，此时打印出6，这时，`主流程代码执行完毕`，处于闲置状态，这时，之前被`挂起的异步任务队列会被执行`，从第一个开始，setTimeout(function () {}, 50) `优先返回结果`，会被放到第一个队列，同步代码执行完毕之后，`异步队列的回调`会被`放入栈中执行同步代码`
 
+
+```ts
+setTimeout(() => {
+  console.log('1')
+}, 0)
+
+new Promise((resolve) => {
+  console.log('2');
+  resolve()
+}).then(() => {
+  console.log('3')
+  new Promise((resolve) => {
+    console.log('resolve');
+    resolve()
+  }).then(() => {
+    console.log('end resolve');
+  })
+})
+
+console.log(4)
+```
+这里涉及到宏任务，微任务的概念
+**宏任务:setTimeOut、setInverter、JavaScript代码**
+**宏任务:MutationObserver，Promise的回调函数**
+事件循环的顺序决定js代码的执行顺序。进入整体代码（宏任务）后，开始第一次循环。接着执行所有的微任务。然后再从宏任务开始，找到其中一个任务队列执行完毕，再执行所有的微任务。
+上面代码的执行顺序
+- 代码为宏任务在主线程，先会遇到 setTimeout 将它的回调函数分发到宏任务的事件队列中
+- 走到new Promise的时候代码会直接执行 会先执行`console.log('2')`, 然后将 then 的回调函数执行的方法发放的微任务的事件队列中
+- 之后执行同步代码的 `console.log(4)`
+- 主线程代码执行完成之后，先执行微任务中的代码，也就是then之后的回调代码 `console.log('3')`
+- 此时new Promise也会被执行，会执行`console.log('resolve')`, then作为微任务再次被放单事件队列中
+- 第一个pormise的回调执行完成之后，当前的任务队列中没有宏任务要执行，则开始微任务代码的执行也就是  then 的回调 `console.log('end resolve');`
+- 该队列下的所有宏任务，微任务执行完成之后结束此次任务，执行后续的任务
+- 微任务代码执行完成之后，会再次查找宏任务中的代码，也就是settimeout的回调函数 `console.log('1')`
+
+**结果**
+```ts
+// 2
+// 4
+// 3
+// resolve
+// end resolve
+// 1
+```
+
 ### 事件循环示意图
 ![event-loop](javascript事件循环/event-loop.jpg)
 
