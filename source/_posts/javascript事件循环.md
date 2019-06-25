@@ -63,13 +63,14 @@ new Promise((resolve) => {
 
 console.log(4)
 ```
+
 这里涉及到宏任务，微任务的概念
 **宏任务:setTimeOut、setInverter、JavaScript代码**
-**宏任务:MutationObserver，Promise的回调函数**
+**微任务:MutationObserver，Promise的回调函数**
 事件循环的顺序决定js代码的执行顺序。进入整体代码（宏任务）后，开始第一次循环。接着执行所有的微任务。然后再从宏任务开始，找到其中一个任务队列执行完毕，再执行所有的微任务。
 上面代码的执行顺序
 - 代码为宏任务在主线程，先会遇到 setTimeout 将它的回调函数分发到宏任务的事件队列中
-- 走到new Promise的时候代码会直接执行 会先执行`console.log('2')`, 然后将 then 的回调函数执行的方法发放的微任务的事件队列中
+- 走到new Promise的时候代码会直接执行 会先执行`console.log('2')`, 然后将 then 的回调函数执行的方法发放的微任务的事件队列中, 因为promise 的`console.log('2')`是同步执行的，同步任务执行完后会去清空microtasks queues， 最后清空完微任务再去宏任务队列取值。
 - 之后执行同步代码的 `console.log(4)`
 - 主线程代码执行完成之后，先执行微任务中的代码，也就是then之后的回调代码 `console.log('3')`
 - 此时new Promise也会被执行，会执行`console.log('resolve')`, then作为微任务再次被放单事件队列中
