@@ -90,96 +90,171 @@ static wxSign (ticket: string): IwxSign {
   * @props { Array } data.jsApiList  必填，需要使用的JS接口列表
   * @link 接口列表地址 https://mp.weixin.qq.com/wiki?t=resource/res_main&id=mp1421141115
   */
-static initWxConfig (data: any): void {
-  wx.config(data)
+static initWxConfig (config: IWxConfig): void {
+  wx.config(Object.assign({}, {
+    debug: false
+  }, config))
 
   wx.error((res: any) => {
-    LogUtils.logError(res, 'wx.config => error')
+    LogUtils.logError(res, '[d-utils] wx.config error => ')
   })
 }
 ```
 
 ### 微信分享的方法的注册
-配置好了之后就是微信分享的注册，这里只实现微信link的分享，监听的方法写在wx.ready中，并且`wxShare`方法会返回一个promise
+配置好了之后就是微信分享的注册，这里只实现微信link的分享，监听的方法写在wx.ready中，并且`wxShareToFriendCircle` `wxShareToFriend`方法会返回一个promise
 ```ts
 /**
-  * @description 微信分享初始化
-  * @param { Object } sharInfo  分享的内容
+  * 分享给朋友
+  * @param {Object} sharInfo
   * @props { String } sharInfo.title 分享的title
   * @props { String } sharInfo.desc 分享描述
   * @props { String } sharInfo.link 分享链接
   * @props { String } sharInfo.imgUrl 分享图标
+  * @props { Function } sharInfo.success 成功的回调
+  * @props { Function } sharInfo.cancel  取消的回调
+  * @props { Function } sharInfo.complete 完成的回调
+  * @return { Promise<IWxCallBackType> } 返回一个promise
   */
-static wxShare (sharInfo: any): Promise<string> {
-  // 返回promise
-  return new Promise((resolve, reject) => {
-    wx.ready(() => {
-      // 分享给好友
-      wx.onMenuShareAppMessage({
-        title: sharInfo.title,
-        desc: sharInfo.desc,
-        link: sharInfo.link,
-        imgUrl: sharInfo.imgUrl,
-        success: function () {
-          resolve('onMenuShareAppMessage')
-        },
-        cancel: function () {
-          reject('onMenuShareAppMessage')
-        }
+static wxShareToFriend (sharInfo: IWxShareToFriend): Promise<IWxCallBackType> {
+  const selfShareInfo = Object.assign({}, this.defaultShareInfo, sharInfo)
+  return new Promise ((resolve, reject) => {
+    try {
+      wx.ready(() => {
+        wx.onMenuShareAppMessage({
+          title: selfShareInfo.title,
+          desc: selfShareInfo.desc,
+          link: selfShareInfo.link,
+          imgUrl: selfShareInfo.imgUrl,
+          success: function (res) {
+            const data: IWxCallBackType = {
+              type: 'onMenuShareAppMessage',
+              data: res
+            }
+            selfShareInfo.success(data)
+            resolve(data)
+          },
+          cancel: function (res) {
+            const data: IWxCallBackType = {
+              type: 'onMenuShareAppMessage',
+              data: res
+            }
+            selfShareInfo.cancel(data)
+            resolve(data)
+          },
+          complete: function (res) {
+            const data: IWxCallBackType = {
+              type: 'onMenuShareAppMessage',
+              data: res
+            }
+            selfShareInfo.complete(data)
+            resolve(data)
+          }
+        })
       })
+    } catch (e) {
+      const data: IWxCallBackType = {
+        type: 'onMenuShareAppMessage',
+        data: e
+      }
+      reject(data)
+    }
+  })
+}
 
-      // 自定义“分享给朋友”及“分享到QQ”按钮的分享内容（1.4.0）
-      // wx.updateAppMessageShareData({
-      //   title: sharInfo.title,
-      //   desc: sharInfo.desc,
-      //   link: sharInfo.link,
-      //   imgUrl: sharInfo.imgUrl,
-      //   success: function () {
-      //     resolve('updateAppMessageShareData')
-      //   },
-      //   cancel: function () {
-      //     reject('updateAppMessageShareData')
-      //   }
-      // })
-
-      // 分享到朋友圈
-      wx.onMenuShareTimeline({
-        title: sharInfo.title,
-        link: sharInfo.link,
-        imgUrl: sharInfo.imgUrl,
-        success: function () {
-          resolve('onMenuShareTimeline')
-        },
-        cancel: function () {
-          reject('onMenuShareTimeline')
-        }
+/**
+  * 分享到朋友圈
+  * @param {Object} sharInfo
+  * @props { String } sharInfo.title 分享的title
+  * @props { String } sharInfo.link 分享链接
+  * @props { String } sharInfo.imgUrl 分享图标
+  * @props { Function } sharInfo.success 成功的回调
+  * @props { Function } sharInfo.cancel  取消的回调
+  * @props { Function } sharInfo.complete 完成的回调
+  * @return { Promise<IWxCallBackType> } 返回一个promise
+  */
+static wxShareToFriendCircle (sharInfo: IWxShareToFriendsCircle): Promise<IWxCallBackType> {
+  const selfShareInfo = Object.assign({}, this.defaultShareInfo, sharInfo)
+  return new Promise ((resolve, reject) => {
+    try {
+      wx.ready(() => {
+        wx.onMenuShareTimeline({
+          title: selfShareInfo.title,
+          link: selfShareInfo.link,
+          imgUrl: selfShareInfo.imgUrl,
+          success: function (res) {
+            const data: IWxCallBackType = {
+              type: 'onMenuShareTimeline',
+              data: res
+            }
+            selfShareInfo.success(data)
+            resolve(data)
+          },
+          cancel: function (res) {
+            const data: IWxCallBackType = {
+              type: 'onMenuShareTimeline',
+              data: res
+            }
+            selfShareInfo.cancel(data)
+            resolve(data)
+          },
+          complete: function (res) {
+            const data: IWxCallBackType = {
+              type: 'onMenuShareTimeline',
+              data: res
+            }
+            selfShareInfo.complete(data)
+            resolve(data)
+          }
+        })
       })
-
-      // 自定义“分享到朋友圈”及“分享到QQ空间”按钮的分享内容（1.4.0）
-      // wx.updateTimelineShareData({
-      //   title: sharInfo.title,
-      //   desc: sharInfo.desc,
-      //   link: sharInfo.link,
-      //   imgUrl: sharInfo.imgUrl,
-      //   success: function () {
-      //     resolve('updateTimelineShareData')
-      //   },
-      //   cancel: function () {
-      //     reject('updateTimelineShareData')
-      //   }
-      // })
-    })
+    } catch (e) {
+      const data: IWxCallBackType = {
+        type: 'onMenuShareTimeline',
+        data: e
+      }
+      reject(data)
+    }
   })
 }
 ```
-promise返回的 onMenuShareTimeline 和 onMenuShareAppMessage 字符串可以用户分享之后提示分享的渠道是否成功
+promise返回的 type  data  对象可以用户分享之后提示分享的渠道是否成功
 
 **至此，一个通用的微信分享的实现机制完成了**
 
-### 如何使用
+### 更新， vue项目出现第一次授权隔一段时间静默授权的时候，出现分享失败的问题
+这种问题目前测试只存在于ios的微信浏览器中，解决方法目前只有 页面重新加载的方式初始化微信分享。否则这种问题是毕现的，解决方法
 ```ts
-// 明天找以下代码贴出来
+/**
+  * ios 手机在code过期之后会重新静默授权，会导致分享失败，通过url中是否存在code，针对ios用户执行reload的操作
+  * @since 3.0.1
+  */
+static plantIosReloadShim = () => {
+  const query = parseUrl()
+  if (Object.keys(query).includes('code') && isIOS()) {
+    localStorage.setItem('weixin-utils-reload', 'true')
+  }
+}
+
+/**
+  * 在其他页面都需要添加改方法，用户在页面加载之后重新reload，已保证微信分享正常
+  * @since 3.0.1
+  */
+static reloadIosWhenCode = () => {
+  const hostAndPath = window.location.href.split('?')[0]
+  const reload = localStorage.getItem('weixin-utils-reload')
+  const urlSearch = new URLSearchParams(window.location.search)
+  urlSearch.delete('code')
+  const newUrl = urlSearch.toString() ?  `${hostAndPath}?${urlSearch.toString()}` : hostAndPath
+  if (reload === 'true') {
+    localStorage.removeItem('weixin-utils-reload')
+    setTimeout(() => {
+      location.replace(newUrl)
+    }, 88)
+  }
+}
 ```
+需要在路由拦截的时候种植一个 是否需要reload 的判断，依据是判断是否带有code。有的话 在页面加载好的时候执行 `reloadIosWhenCode` 方法以达到reload的效果
 
 [`完整的微信分享代码`](https://github.com/IFmiss/d-utils/blob/master/src/lib/weixinUtils/index.ts)
 
