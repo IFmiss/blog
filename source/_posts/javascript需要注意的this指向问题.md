@@ -116,3 +116,145 @@ ele.onclick = funciton () {
 }.bind(window)
 ```
 
+以上是this指向的出现场景，下面再做一些this相关的面试题巩固了解一下
+
+#### 题目一
+```ts
+this.x = 9;    // this refers to global "window" object here in the browser
+var module = {
+  x: 81,
+  getX: function() { return this.x; }
+};
+
+module.getX(); // 81
+
+var retrieveX = module.getX;
+retrieveX();   // 9
+```
+因为this的指向是在函数执行的时候绑定的，而非函数创建时绑定，所以 retrieveX() === this.retrieveX() === 9, module.getX() === 81
+
+#### 题目二
+```ts
+function foo() {
+  console.log(this.a)
+}
+var a = 2
+var b = { a: 'b.a', foo: foo }
+var c = { a: 'c.a' }
+
+foo()   // 2
+b.foo()   // 'b.a'
+console.log(b.foo)
+(c.foo = b.foo)()   // 2
+c.foo()   // 'c.a'
+```
+至于为什么`(c.foo = b.foo)() === 2`,我们来解释一下
+(c.foo = b.foo)()我们可以这么写
+```ts
+function foo() {
+  console.log(this.a)
+}
+var a = 2
+var b = { a: 'b.a', foo: foo }
+var c = { a: 'c.a' }
+
+function fn() {
+  c.foo = b.foo
+  return c.foo
+}
+fn()()   // 2
+```
+而fn执行的方法指向的this是window，结果也就是2了
+
+#### 题目三
+```ts
+var len = 10
+function fn() {
+  console.log(this.len)
+}
+
+var obj = {
+  len: 5,
+  getLen: function (fn) {
+    console.log(this.len)
+    fn()
+    arguments[0]()
+  }
+}
+obj.getLen(fn, 1)
+// 5
+// 10
+```
+this永远指向调用他的对象，没错 `getLen`方法里的this指向的是obj对象，所以拿到的第一个打印信息是5，但是在该方法内部执行的fn有单独的this绑定，也就是window，所以第二个结果为10
+
+#### 题目四
+```ts
+var foo = 1;
+function fn () {
+  this.foo = 2
+  console.log(foo)
+}
+fn()    // 2
+```
+fn执行方法this指向的window，导致foo被赋值成2，打印的就是2
+
+```ts
+var foo = 1;
+function fn () {
+  this.foo = 2
+  console.log(foo)
+}
+new fn()    // 1
+new fn().foo    // 2   实例化的this指向的不是window 而是 实例化生成的新对象
+```
+
+#### 题目五
+```ts
+var a = {
+  name: 'zh',
+  sayName: function () {
+    console.log(`hello, ${this.name}`)
+  }
+}
+var name = 'ls'
+function sayName() {
+  var s = a.sayName
+  s()   // 'hello, ls'
+  a.sayName()   // 'hello, zh'
+  (a.sayName)()   // 'hello, zh'
+  (b = a.sayName)()   // 'hello, ls'
+}
+
+sayName()
+```
+- 分析
+ - `s()` this指向的是全局对象也就是 window.name 也就是 'hello, ls'
+ - `a.sayName()` 此时执行的是a对象下的方法，a.sayName绑定的对象是a，a.name为'zh'，因此结果为'hello, zh'
+ - `(a.sayName)()` 等价于a.sayName() 结果和上面一样为'hello, zh'
+ - `(b = a.sayName)()` 赋值操作再执行b方法等价于第一个结果为 'hello, ls'
+
+#### 题目六
+```ts
+var name = 'zh'
+var obj = {
+  name: 'ls',
+  sayName: function () {
+    console.log(`this.name: ${this.name}`)
+  },
+  callback: function () {
+    var _this = this
+    return function () {
+      var sayName = _this.sayName
+      _this.sayName()   // this.name: ls
+      sayName()   // this.name: zh
+    }
+  }
+}
+obj.callback()();
+```
+- 分析
+  - `obj.callback()` 返回一个函数，此时已经绑定了_this的指向，为`obj`对象，然后再执行这个函数
+  - `_this.sayName()` 就相当于`obj.sayName()`，所以执行的结果为 'this.name: ls'
+  - `sayName()` 在执行的时候当前函数的时候this的指向为window，此时的sayName方法中的this.name相当于window.name也就是'zh'，最后的结果为'this.name: zh'
+  
+
