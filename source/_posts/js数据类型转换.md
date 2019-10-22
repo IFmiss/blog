@@ -10,7 +10,7 @@ JavaScript 数据类型分为基本数据类型和引用数据类型
 ### 基本数据类型
 - `string`
 - `boolean`
-- `undefide`
+- `undefined`
 - `null`
 - `number`
 - `symbol` (es6新类型)
