@@ -172,5 +172,5 @@ Boolean(1)   // true
 <!-- ####  -->
 
 
-参考于：[阮一峰，JavaScript标准教程](http://javascript.ruanyifeng.com/grammar/conversion.html#toc5)
+参考于：[阮一峰，JavaScript标准教程](http://javascript.ruanyifeng.com/grammar/conversion.html#toc0)
 
