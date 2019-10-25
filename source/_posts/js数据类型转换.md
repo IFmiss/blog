@@ -169,8 +169,82 @@ Boolean(1)   // true
 
 ### 隐式类型转换
 在某些情况下，即使我们不提供显示转换，Javascript也会进行自动类型转换，主要情况有：
-<!-- ####  -->
+- 自动转换为布尔值
+- 自动转换为字符串
+- 自动转换为数值
 
+### 自动转换为布尔值
+JavaScript遇到预期为布尔值的时候会将非布尔值自动转换成布尔值，系统会自定调用 Boolean 函数
+除了以下五个值以外，其他的自动转为true
+- `undefined`
+- `null`
+- `-0 ， +0`
+- `NaN`
+- `''`
+
+<!-- 他们是如何调用内部函数的？
+```ts
+
+``` -->
+```ts
+!undefined    // true
+!null         // true
+!0            // true
+!NaN          // true
+!''           // true
+```
+如果判断元素获取布尔返回值的话
+```ts
+const a = '1'
+a ? true : false    // true
+!!a                 // true
+```
+
+### 自动转换为字符串
+JavaScript 遇到预期为字符串的地方，会将非字符串的值自动转换为原始类型值在转为字符串
+```ts
+'1' + 1  // '11'
+'1' + true  // '1true'
+'1' + false   // '1false'
+'1' + {}  // '1[object Object]'
+'1' + []  // '1'
+'1' + function () {}  // '1function () {}'
+'1' + undefined   // '1undefined'
+'1' + null  // '1null'
+```
+
+### 自动转换为数值
+JavaScript 遇到预期为数值的地方，会自动将参数转化成数值，系统内部会自动调用Number函数
+除了加法运算符（+）有可能把运算子转为字符串，其他运算符都会把运算子自动转成数值。
+```ts
+'5' - '2' // 3
+'5' * '2' // 10
+true - 1   // 0
+false - 1   // -1
+'1' - 1   // 0
+'5' * []  // 0
+false / '5'   // 0
+'abc' - 1   // NaN
+null + 1    // 1
+undefined + 1   // NaN
+```
+
+### 常见面试题
+#### Question 1
+```ts
+[] == false   // true
+![] == false    // true
+```
+第一个结果为`true` 原因是 [] 被转换成 '' 之后被转化成数值 0 返回true
+第二个结果同样`true` 前边多了个!，直接被转成bool值取反，[]转bool为true，取反为false，所以结果也相等
+
+#### Qusetion 2
+```ts
+[] + {}     // '[object Object]'
+{} + []     // 0
+```
+第一个按照正常的js隐式转换逻辑[] 转换为''(空字符串)，{} 转换为 '[object Object]'， 结果为 '[object Object]'
+第二个的{}被视为一个代码块，而不是一个javascript对象，所以相当于 +[]，将 []转化为数值，所以结果为 0
 
 参考于：[阮一峰，JavaScript标准教程](http://javascript.ruanyifeng.com/grammar/conversion.html#toc0)
 
