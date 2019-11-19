@@ -5,13 +5,15 @@ categories: 通用组件或工具
 tags: [js]
 ---
 
-![d-js-utils](个人通用js方法库d-js-utils/bg.png)
+
+
+![d-utils](https://www.daiwei.site/static/blog/个人通用js方法库d-js-utils/bg.png)
 从刚开始做前端开发开始，就有想过收集一些通用的js方法，或者平时自己写的觉得不错的一些方法，然后收集起来，方便以后使用，但是刚开始虽然收集了一些通用方法，但是在使用过程中相对比较麻烦，随着npm项目管理以及webpack工具在现在的项目中必不可少，开始寻思收集一些通用的js方法，并发布到npm，等以后什么项目用到了直接npm install 就可以直接使用了，方便，而且也是一个很好的累积过程
 <!-- more -->
 ## 产生的原因
 从刚开始做前端开发开始，就有想过收集一些通用的js方法，或者平时自己写的觉得不错的一些方法，然后收集起来，方便以后使用，但是刚开始虽然收集了一些通用方法，但是在使用过程中相对比较麻烦，随着npm项目管理以及webpack工具在现在的项目中必不可少，开始寻思收集一些通用的js方法，并发布到npm，等以后什么项目用到了直接npm install 就可以直接使用了，方便，而且也是一个很好的累积过程
 
-## 关于d-js-utils
+## 关于d-utils
 该方法一共包含以下属性，每个属性收集了对应的方法内容
 
 - `DomUtils`
@@ -49,34 +51,35 @@ tags: [js]
 
 ## 相关地址
 [文档地址: https://ifmiss.github.io/d-js-utils/](https://ifmiss.github.io/d-js-utils/)
+
 [项目地址: https://github.com/ifmiss/d-js-utils/](https://github.com/ifmiss/d-js-utils/)
 
 ## 快速使用
 #### 安装 （1.1.14及以上的版本）
 使用npm安装 `d-utils` 依赖
 ```bash
-npm i @dw/d-utils
+npm i d-utils
 ```
 yarn
 ```hash
-yarn add @dw/d-utils
+yarn add d-utils
 ```
 #### 使用
 获取所有方法
 ```js
-import Dutils from '@dw/d-utils'
+import Dutils from 'd-utils'
 Dutils.DomUtils.addClass(document.body, 'd-utils')
 ```
 按需引入
 ```js
-import { DomUtils, LogUtils } from '@dw/d-utils'
+import { DomUtils, LogUtils } from 'd-utils'
 DomUtils.addClass(document.body, 'd-utils')
 LogUtils.logInfo('d-utils')
 ```
 
 直接引用js
 ```html
-<script src="www.daiwei.org/d-utils.js"></script>
+<script src="https://daiwei.site/static/resourse/d-utils/d-utils.js"></script>
 <script>
   Dutils.DomUtils.addClass(document.body, 'd-utils')
 </script>
@@ -84,10 +87,4 @@ LogUtils.logInfo('d-utils')
 复制一下代码在控制台打印一下，看会有什么变化
 ```js
 Dutils.DomUtils.cssFilter(document.body, 'grayscale', 1)
-```
-```js
-Dutils.GenericUtils.openFullScreen(document.getElementsByTagName('html')[0])
-```
-```js
-Dutils.GenericUtils.exitFullScreen()
 ```
