@@ -271,9 +271,8 @@ function flushAfterPaintEffects() {
 }
 ```
 ```js
-// useLayoutEffect 代码
+// useLayoutEffect 代码 和useEffect代码逻辑相似
 export function useLayoutEffect(callback, args) {
-	/** @type {import('./internal').EffectHookState} */
 	const state = getHookState(currentIndex++);
 	if (argsChanged(state._args, args)) {
 		state._value = callback;
@@ -317,7 +316,171 @@ options._commit = (vnode, commitQueue) => {
 ```
 
 ### useContext
+`useContext` 接受一个上下文对象，并返回当前上下文的值（provider.props.value），而这个值是由调用组件的value属性决定的，看代码
+
+#### StoreContext.ts  创建一个上下文
+```ts
+// StoreContext.ts
+// StoreContext 定义 两个值 name, value
+import React, {
+	createContext
+} from 'react'
+
+// 定义类型
+interface IStoreContextProps {
+	name: string;
+	value: string;
+	changeName?: () => void;
+}
+
+const context = createContext<IStoreContextProps>({
+	name: '',
+	value: ''			// 可以设置默认值
+})
+export default context
+```
+
+#### 顶层元素
+```tsx
+import React from 'react'
+import StoreContext from './StoreContext'
+import Child from './Child'
+
+const Parent = function () {
+	const changeName = () => {
+		// ...
+	}
+	return (
+		<StoreContext.Provider value={{
+														 name: 'react',
+														 value: 'react-hook-study',
+														 changeName
+													 }}>
+			<Child/>
+		</StoreContext.Provider>
+	)
+}
+```
+
+#### 子元素，子子元素..., 获取context值
+```tsx
+import React, {
+	useContext
+} from 'react'
+import StoreContext from './StoreContext'
+
+const Child = function () {
+	const { name, value, changeName } = useContext(StoreContext)
+	return (
+		<div>
+			<div>{name}</div>
+			<div>{value}</div>
+			<div onClick={changeName}>点击我执行</div>
+		</div>
+	)
+}
+```
+Child在父元素没有传递属性的情况下获取数据和执行方法
+
+#### React.createContext
+这是react在16.3出得一个api特性，https://zhuanlan.zhihu.com/p/34038469 这篇文章详细讲述了 React.createContext 工作原理
+https://codesandbox.io/s/lvwlqo887
+https://github.com/jamiebuilds/create-react-context/blob/master/src/implementation.js
+
+#### 继续看 preact 源码
+create-context.js 是 preact 创建context的方法 
+```js
+import { enqueueRender } from './component';
+
+export let i = 0;			// 记录索引，保证取得context都是正确的
+
+export function createContext(defaultValue) {
+	// 上下文初始化
+	const ctx = {};
+
+	const context = {
+		// 唯一的id
+		_id: '__cC' + i++,
+		// 记录默认的初始化值
+		_defaultValue: defaultValue,
+
+		// context中申明 Consumer 方法
+		Consumer(props, context) {
+			return props.children(context);
+		},
+		// 申明 Provider
+		Provider(props) {
+			// 判断是否初始化。为初始化执行初始化操作
+			if (!this.getChildContext) {
+				const subs = [];
+				this.getChildContext = () => {
+					// 当前 '__cC' + i++, 的value值指向 定义的这个Provider函数  并返回 ctx
+					ctx[context._id] = this;
+					return ctx;
+				};
+
+				// Provider 组件 对 shouldComponentUpdate 做处理
+				this.shouldComponentUpdate = _props => {
+					// 如果当前的props.value 不等于 next 的props.value
+					if (props.value !== _props.value) {
+						subs.some(c => {
+							// 组件的 context 属性 设置 _props.value 的值
+							c.context = _props.value;
+							// 调用enqueueRender进行组件更新
+							enqueueRender(c);
+						});
+					}
+				};
+				// 注册组件，且在组件 componentWillUnmount 销毁组件
+				this.sub = c => {
+					// 将组件推入 sub 队列
+					subs.push(c);
+					let old = c.componentWillUnmount;
+					c.componentWillUnmount = () => {
+						// 组件被销毁的时候 清空 subs 关联的组件
+						subs.splice(subs.indexOf(c), 1);
+						// 执行组件被销毁的时候的 componentWillUnmount 生命周期
+						old && old.call(c);
+					};
+				};
+			}
+			// 返回子组件
+			return props.children;
+		}
+	};
+
+	context.Consumer.contextType = context;
+	// 返回context 包括  { _id, _defaultValue, Consumer, Provider }
+	return context;
+}
+```
+
+```js
+export function useContext(context) {
+	// context._id 是在执行 React.createContext 产生的  还有 默认传入的 context._defaultValue
+	// 判断是否有 provider 没有返回默认的 _defaultValue
+	const provider = currentComponent.context[context._id];
+	if (!provider) return context._defaultValue;
+	// 返回一个 _list[currentIndex++] 对象
+	const state = getHookState(currentIndex++);
+	// This is probably not safe to convert to "!"
+	if (state._value == null) {
+		// 设置 _value
+		state._value = true;
+		// currentComponent push 到 subs队列中
+		provider.sub(currentComponent);
+	}
+	// 获取 provider 跟组件的props 的value 值
+	return provider.props.value;
+}
+```
+
 ### useReducer
+`useReducer` 是useState的替代方案，接受一个`(state, action) => newState` 的reducer，并返回当前state以及配套的duspath方法，当state逻辑比较复杂且包含多个值的时候，userReducer是一个不错的选择
+```tsx
+
+```
+
 ### useMemo
 ### useCallBack
 ### useRef
