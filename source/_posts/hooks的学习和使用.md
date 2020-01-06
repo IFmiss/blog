@@ -29,7 +29,7 @@ const Test = function (props) {
   )
 }
 ```
-可以看到 `useState`函数传递一个唯一的初始值参数，并返回一个数组，数组的第一个值就是这个初始化的参数值，第二个值是一个方法，这个方法可以在内部操作count的值（执行count + 1）并触发rerender
+可以看到 `useState`函数传递一个唯一的初始值参数，并返回一个数组，数组的第一个值就是这个初始化的参数值，第二个值是一个方法，这个方法可以在内部操作count的值（执行count + 1）并触发`re-render`
 #### `useState`是 `useReducer`封装实现
 从preact源码可以看到
 ```js
@@ -125,7 +125,7 @@ export function useReducer(reducer, initialState, init) {
 `useState` 返回两个值，按照我刚开始定义count 的state 来说
 - 调用useReducer 的方法创建一个 `_list[++cureentIndex]` 的hook内容
 - `hookState` 设置 _value 第一个值为 `invokeOrReturn(undefined, 0)`， 返回值是一个 0 的数字
-- `hookState` 设置 _value 第二个值为一个方法，获取这个方法的执行结果，和当前的状态对比，如果变化了触发rerender，参数action 可以是值，也可以是一个带有返回值的 function
+- `hookState` 设置 _value 第二个值为一个方法，获取这个方法的执行结果，和当前的状态对比，如果变化了触发`re-render`，参数action 可以是值，也可以是一个带有返回值的 function
 
 所以setState还可以这么写
 ```tsx
@@ -142,7 +142,7 @@ import React, {
 const Test = function (props) {
   const [count, setCount] = useState(0)
   // 第二个参数表示依赖的数据源，数据源变化会触发 useEffect 第一个参数内部的方法
-  // 默认不设置的情况下rerender的场景下 effect 都会被调用
+  // 默认不设置的情况下re-render的场景下 effect 都会被调用
   // 为空数组表示该 effect 只会被调用一次
   // 如果为count 初始化的时候会调用一次，然后count变化一次则会调用一次， 数组中的任何一个元素变化都会触发 effect
   useEffect(() => {
@@ -482,9 +482,156 @@ export function useContext(context) {
 ```
 
 ### useMemo
+`useMemo` 返回一个 **memoized** 值
+```tsx
+import React, {
+	useMemo
+} from 'react'
+
+const Test = () => {
+	const [a, setA] = useState(1)
+	const doubleValue = useMemo(() => {
+		return a * 2
+	}, [a])
+	return (
+		<div>
+			<span>{doubleValue}</span>
+			<span onClick={() => setA(a + 1)}>点击 ++</span>
+		</div>
+	)
+}
+```
+在这里，每当 点击+1 的时候 `doubleValue` 返回的值都是最新的 `a * 2`的结果，如果用过vue 的computed的话，其实是一样的效果，而且vue3.0的 computed 也是一个函数
+
+再来看看preact中对于useMemo的实现:
+```js
+// 第一个参数是一个带有返回值的函数
+// 第二个是依赖项数组
+export function useMemo(factory, args) {
+	// 从数组中创建一个_list[currentIndex++]对象
+	const state = getHookState(currentIndex++);
+	// 判断state之前的依赖项和当前的依赖项是否有变化
+	if (argsChanged(state._args, args)) {
+		state._args = args;
+		state._factory = factory;
+		// 重新执行useMemo中的函数 并赋值 state._value 且返回该值
+		return (state._value = factory());
+	}
+
+	// 如果没有变化直接返回值
+	return state._value;
+}
+```
+
 ### useCallBack
+`useCallBack` 的作用是利用 memoize 减少无效的 `re-render`，从而达到性能优化的作用，什么场景下会用到呢? 可以看下面的代码
+```jsx
+// 定义一个父组件
+import React, {
+	useState
+} from 'react'
+import Child from './Child'
+const Test = () => {
+	const [a, setA] = useState(1)
+	const getNewData = () => {
+		setTimeout(() => {
+			setA(a + 1)
+		}, 500)
+	}
+
+	return (
+		<Child a={a} getNewData={getNewData}/>
+	)
+}
+
+// Child.tsx子元素
+import React, {
+	useEffect
+} from 'react'
+
+const Child = ({ a, getNewData }) => {
+	useEffect(() => {
+		getNewData()
+	}, [getNewData])
+	return (
+		<div>{a}</div>
+	)
+}
+```
+这种场景下会发生死循环，先看执行步骤
+ - Test组件render，传入 `a` 和 `getNewData` 属性
+ - Child拿到 `a` 并渲染，`getNewData` 获取到最新的时候执行 `getNewData`，第一次渲染会直接执行
+ --------------以下便开始重新循环-------------
+ - 此时 Test 的 `getNewData` 被执行，500毫秒后，a的值发生变化，Test重新渲染
+ - `getNewData` 被重新创建，`getNewData` 和 `a` 被重新作为属性传入到子元素
+ - Child 监听到 `getNewData` 变化继续执行 `getNewData` 方法
+ - 然后就一直循环
+#### 其实问题的根源在于两次的 `getNewData` 引用发生了变化，导致重复渲染的操作，此时`useCallback`就可以解决这个问题
+```jsx
+import React, {
+	useState
+} from 'react'
+import Child from './Child'
+const Test = () => {
+	const [a, setA] = useState(1)
+	const getNewData = useCallback(() => {
+		setTimeout(() => {
+			setA(a + 1)
+		}, 500)
+	}, [])
+
+	return (
+		<Child a={a} getNewData={getNewData}/>
+	)
+}
+// 此时 useCallback 返回的值都是同一个值
+// 第一次返回的是 return (state._value = factory())
+// 之后就直接返回 state._value 就是useMemo的包装，只不过 factory() 的返回值是一个方法
+```
+#### 除此之外还有就是 不能在 `useCallback` 内部设置新的依赖的状态值
+```jsx
+const Test = () => {
+	const [a, setA] = useState(1)
+	const getNewData = useCallback(() => {
+		console.log(a)
+		setA(a + 1)
+	}, [a])
+
+	return (
+		<div>test callback</div>
+	)
+}
+```
+```jsx
+function useRefCallback(fn, dependencies) {
+  const ref = useRef(fn);
+
+  // 每次调用的时候，fn 都是一个全新的函数，函数中的变量有自己的作用域
+  // 当依赖改变的时候，传入的 fn 中的依赖值也会更新，这时更新 ref 的指向为新传入的 fn
+  useEffect(() => {
+    ref.current = fn;
+  }, [fn, ...dependencies]);
+
+  return useCallback(() => {
+    const fn = ref.current;
+    return fn();
+  }, [ref]);
+}
+```
+
+
+preact中的 `useCallback` 就只有一行代码
+```jsx
+export function useCallback(callback, args) {
+	return useMemo(() => callback, args);		// 返回一个 memoize 方法
+}
+```
+
+
 ### useRef
 ### useImperativeHandle
 ### useDebugValue
 
 ### 自定义hook
+
+https://zhuanlan.zhihu.com/p/56975681
