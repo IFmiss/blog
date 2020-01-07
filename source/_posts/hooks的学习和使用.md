@@ -689,6 +689,14 @@ const Test = () => {
 	)
 }
 ```
+但是 `useRef` 比 `ref` 更好用，它可以很方便地保存任何可变值，数据存储在 .current 属性中，**当数据发生变化的时候，不会触发组件重新渲染**
+
+preact 源码中 `useRef` 是一个没有数据依赖的 useMemo 返回 带有 current属性 initialValue 的初始值的对象
+```js
+export function useRef(initialValue) {
+	return useMemo(() => ({ current: initialValue }), []);
+}
+```
 
 ### useImperativeHandle
 ### useDebugValue
@@ -696,3 +704,4 @@ const Test = () => {
 ### 自定义hook
 
 https://zhuanlan.zhihu.com/p/56975681
+https://dev.to/dinhhuyams/introduction-to-useref-hook-3m7n
