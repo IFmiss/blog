@@ -478,8 +478,46 @@ export function useContext(context) {
 ### useReducer
 `useReducer` 是useState的替代方案，接受一个`(state, action) => newState` 的reducer，并返回当前state以及配套的duspath方法，当state逻辑比较复杂且包含多个值的时候，userReducer是一个不错的选择
 ```tsx
+// 实现一个控制元素数量的功能
+import React, {
+	useReducer
+} from 'react'
 
+const Calc = ({ count = 0 }) => {
+	// reducer 函数
+	const reducer = (state, action) => {
+		switch (action.type) {
+			case 'add':
+				return Object.assign({}, state, { count: state.count + 1})
+			case 'reducer':
+				return Object.assign({}, state, { count: state.count - 1})
+			case 'reset':
+				return init(action.payload);
+			default:
+				return state
+		}
+	}
+
+	const init = (initialValue) => {
+		return { count: initialValue }
+	}
+
+	const [state, dispath] = useReducer(reducer, count, init)
+
+	return (
+		<div>
+			// 初始值 为 props.count 也就是 0
+			<div>{state.count}</div>
+			<span onClick={() => {dispath({type: 'add'})}}>add</span>
+      <span onClick={() => {dispath({type: 'reducer'})}}>reducer</span>
+      <span onClick={() => {dispath({type: 'reset', payload: count})}}>reset</span>
+		</div>
+	)
+}
 ```
+`useReducer`可以传三个参数，你可以选择惰性地创建初始 state。为此，需要将 `init 函数` 作为 useReducer 的第三个参数传入，这样初始 state 将被设置为 init(initialArg)，也就是默认显示传入count 的props的值
+其目的是为了将 state 逻辑提取到 `reducer` 外部，同样可以方便重置state的初始值
+
 
 ### useMemo
 `useMemo` 返回一个 **memoized** 值
@@ -627,8 +665,31 @@ export function useCallback(callback, args) {
 }
 ```
 
-
 ### useRef
+`useRef` 返回一个可变的 ref 对象，其 .current 属性被初始化为传入的参数（initialValue）。返回的 ref 对象在组件的整个生命周期内保持不变
+```js
+const Test = () => {
+	const refInfo = useRef(1)		// refInfo.current === 1
+
+	return (
+		<div>test useRef</div>
+	)
+}
+```
+`ref` 会让人想到react 获取元素的dom节点，将dom节点的信息存放在变量中, `refInfo` 也可以将`.current`属性设置元素的`dom`节点
+```js
+const Test = () => {
+	const refInfo = useRef(null)		// refInfo.current === 1
+	const showRef = () => {
+		return refInfo.current		// dom元素，可访问element元素的相应属性
+	}
+
+	return (
+		<div ref={refInfo}>test useRef</div>
+	)
+}
+```
+
 ### useImperativeHandle
 ### useDebugValue
 
