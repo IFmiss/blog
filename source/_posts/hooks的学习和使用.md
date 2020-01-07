@@ -691,17 +691,136 @@ const Test = () => {
 ```
 但是 `useRef` 比 `ref` 更好用，它可以很方便地保存任何可变值，数据存储在 .current 属性中，**当数据发生变化的时候，不会触发组件重新渲染**
 
-preact 源码中 `useRef` 是一个没有数据依赖的 useMemo 返回 带有 current属性 initialValue 的初始值的对象
+preact 源码中 `useRef` 是一个没有数据依赖的 useMemo 返回 带有 current属性 initialValue 的初始值的对象，至于	依赖的数据项，设置为空， 在进行 `argsChanged` 函数执行总是返回true，这会导致 `_list[current++]` 的对象值都是最新的值
+
 ```js
 export function useRef(initialValue) {
 	return useMemo(() => ({ current: initialValue }), []);
 }
 ```
+`useRef` 可以解决闭包带来的问题（数据获取的值一直是最开始的值）
+这里我们直接使用掘金上这位大佬写的🌰
+```ts
+// 会打印出旧值
+function Bar () {
+  const [ count, setCount ] = useState(0)
+
+  const showMessage = () => {
+    console.log(`count: ${count}`)
+  }
+
+  setTimeout(() => {
+    // 打印的出的依然是`0`, 形成了闭包
+    showMessage()
+  }, 2000)
+
+  setTimout(() => {
+    setCount((prevCount) => {
+      return prevCount + 1
+    })
+  }, 1000)
+
+  return <div/>
+}
+
+
+// 利用useRef会打印出新值
+function Bar () {
+  const count = useRef(0)
+
+  const showMessage = () => {
+    console.log(`count: ${count.current}`)
+  }
+
+  setTimeout(() => {
+    // 打印的出的是新值`1`，count.current拿到的是最新的值
+    showMessage()
+  }, 2000)
+
+  setTimout(() => {
+    count.current += 1 
+  }, 1000)
+
+  return <div/>
+}
+```
 
 ### useImperativeHandle
+`useImperativeHandle` 可以向父组件暴露一个自定义的实例，在大多数情况下，应当避免使用 ref 这样的命令式代码。useImperativeHandle 应当与 forwardRef 一起使用
+```js
+function FancyInput(props, ref) {
+  const inputRef = useRef();
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      inputRef.current.focus();
+    }
+  }));
+  return <input ref={inputRef} ... />;
+}
+FancyInput = forwardRef(FancyInput);
+```
+在本例中，渲染 <FancyInput ref={inputRef} /> 的父组件可以调用 inputRef.current.focus()。
+```js
+import React, {
+	useRef
+} from 'react'
+import FancyInput from './FancyInput.js'
+const Parent = () => {
+	const childRef = useRef(null)
+
+	const setToFocus = () => {
+		childRef.current.focus()			// 此时可以调用自组件暴露的 focus 方法
+	}
+
+	return (
+		<FancyInput ref={childRef}>
+	)
+}
+```
+在这个过程中我们看到两个方法 `useImperativeHandle`, `forwardRef`。我们分别看一下两个方法在preact中的实现
+```js
+// forwardRef 接受一个带有 props， ref参数的函数组件
+export function forwardRef(fn) {
+	function Forwarded(props) {
+		// 基于自组件的包装，自己也是一个函数组件，接收 props 属性
+		// 在外层组件调用 forwardRef 包装的组件时，会传入一些 属性（包括 ref 属性）
+		// 拷贝一个 props 传入的属性值
+		let clone = assign({}, props);
+		// 删除拷贝过的ref属性
+		delete clone.ref;
+		// 传入props （此时没有ref属性）， 第二个参数直接传入ref属性给 forwardRef 包装的函数组件，作为第二个参数 并返回该组件
+		return fn(clone, props.ref);
+	}
+	Forwarded.prototype.isReactComponent = true;		// 加标识
+	Forwarded._forwarded = true;		// +状态
+	Forwarded.displayName = 'ForwardRef(' + (fn.displayName || fn.name) + ')';
+	return Forwarded;			// 返回 Forwarded 组件
+}
+```
+
+```js
+// useLayoutEffect 实现在render之前执行内部回调函数
+export function useImperativeHandle(ref, createHandle, args) {
+	useLayoutEffect(
+		() => {
+			// 如果 ref 传入的是一个方法的话，方法包含一个参数，类似这个
+			// ref = { (node) => { this.a = node } }
+			// 相当于 把 createHandle() 执行的结果赋值给在父元素中定义的 a 属性，着应该是以往的ref 创建执行的操作
+			if (typeof ref === 'function') ref(createHandle());
+			// 否则 类似useRef返回的对象来说，将 createHandle()返回的对象 赋值给 ref.current
+			// 子元素在 useImperativeHandle 定义的 createHandle() 返回值 可以被父元素的useRef的值所访问
+			else if (ref) ref.current = createHandle();
+		},
+		// 这里做一个依赖关系 当 ref 发生变化的时候重新走 useLayoutEffect 内部的函数，会被初始化
+		args == null ? args : args.concat(ref)
+	);
+}
+```
+
 ### useDebugValue
 
 ### 自定义hook
 
 https://zhuanlan.zhihu.com/p/56975681
 https://dev.to/dinhhuyams/introduction-to-useref-hook-3m7n
+https://juejin.im/post/5d82c600e51d4561ad65497e
