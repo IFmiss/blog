@@ -30,6 +30,7 @@ const Test = function (props) {
 }
 ```
 可以看到 `useState`函数传递一个唯一的初始值参数，并返回一个数组，数组的第一个值就是这个初始化的参数值，第二个值是一个方法，这个方法可以在内部操作count的值（执行count + 1）并触发`re-render`
+
 #### `useState`是 `useReducer`封装实现
 从preact源码可以看到
 ```js
@@ -205,7 +206,7 @@ function argsChanged(oldArgs, newArgs) {
 来看一张图：
 <!-- [](./) -->
 #### useLayoutEffect 相比 useEffect 的区别
-- 执行顺序，useLayoutEffect 在 render 之前， useEffect 在 render 之后执行内部函数
+- 执行机制，useLayoutEffect 在 render 之前 （本次会在浏览器 layout 之后，painting 之前执行 ）， useEffect 在 render 之后（本次渲染结束之后，下次渲染之前执行）执行内部函数
 - 加载机制，useLayoutEffect 同步阻塞页面加载，useEffect 是异步执行
 
 使用方式和 `useEffect`相同，可以看 preact 源码查看
@@ -383,8 +384,10 @@ const Child = function () {
 Child在父元素没有传递属性的情况下获取数据和执行方法
 
 #### React.createContext
-这是react在16.3出得一个api特性，https://zhuanlan.zhihu.com/p/34038469 这篇文章详细讲述了 React.createContext 工作原理
+这是react在16.3出得一个api特性，这篇文章详细讲述了 [React.createContext](https://zhuanlan.zhihu.com/p/34038469) 工作原理
+
 https://codesandbox.io/s/lvwlqo887
+
 https://github.com/jamiebuilds/create-react-context/blob/master/src/implementation.js
 
 #### 继续看 preact 源码
@@ -699,7 +702,7 @@ export function useRef(initialValue) {
 }
 ```
 `useRef` 可以解决闭包带来的问题（数据获取的值一直是最开始的值）
-这里我们直接使用掘金上这位大佬写的🌰
+这里我们直接使用掘金上这位大佬写的例子
 ```ts
 // 会打印出旧值
 function Bar () {
@@ -818,9 +821,20 @@ export function useImperativeHandle(ref, createHandle, args) {
 ```
 
 ### useDebugValue
+`useDebugValue`
+`useDebugValue` 可用于在 React 开发者工具中显示自定义 hook 的标签，没用过，但是可以直接看源码
+```js
+export function useDebugValue(value, formatter) {
+	if (options.useDebugValue) {
+		options.useDebugValue(formatter ? formatter(value) : value);
+	}
+}
+```
+接受两个参数，第二个参数为方法，方法内部依赖第一个参数的值，有没有知道这个方法用来做什么的大佬解释一波
 
-### 自定义hook
+### 参考于
+[「Preact」逐行解析hooks源码](https://juejin.im/post/5d82c600e51d4561ad65497e)
 
-https://zhuanlan.zhihu.com/p/56975681
-https://dev.to/dinhhuyams/introduction-to-useref-hook-3m7n
-https://juejin.im/post/5d82c600e51d4561ad65497e
+[React Hooks 第一期：聊聊 useCallback](https://zhuanlan.zhihu.com/p/56975681)
+
+[Introduction to useRef Hook](https://dev.to/dinhhuyams/introduction-to-useref-hook-3m7n)
