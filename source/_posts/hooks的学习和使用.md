@@ -204,7 +204,8 @@ function argsChanged(oldArgs, newArgs) {
 ### useLayoutEffect
 `useLayoutEffect` 和useEffect使用方式一样，但是useLayout会在 dom变更之后同步调用effect, useLayout会阻塞视图更新
 来看一张图：
-<!-- [](./) -->
+![useLayoutEffect](https://www.daiwei.site/static/blog/hooks%E7%9A%84%E5%AD%A6%E4%B9%A0%E5%92%8C%E4%BD%BF%E7%94%A8/useLayoutEffect.png)
+
 #### useLayoutEffect 相比 useEffect 的区别
 - 执行机制，useLayoutEffect 在 render 之前 （本次会在浏览器 layout 之后，painting 之前执行 ）， useEffect 在 render 之后（本次渲染结束之后，下次渲染之前执行）执行内部函数
 - 加载机制，useLayoutEffect 同步阻塞页面加载，useEffect 是异步执行
