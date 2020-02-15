@@ -517,12 +517,41 @@ removeIgnoreTemplate: async (projectInfo) => {
 
 #### 模版处理结束 初始化项目执行结束
 
+#### 【添加 git init 初始化操作】用于配置 githook
+```js
+initGitHook: (path) => {
+  console.log('')
+  return new Promise((resolve, reject) => {
+    if (cd(path).code !== 0) {
+      console.log(chalk.red(`无法进入[${path}]目录执行git初始化 \n`))
+      exit(1)
+      reject()
+    }
+
+    if (exec('git init').code !== 0) {
+      console.log(chalk.red(`git init 初始化失败 \n`))
+      exit(1)
+      reject()
+    }
+
+    console.log('')
+    console.log('git init 初始化成功')
+    console.log('')
+    resolve()
+  })
+}
+```
+
 至此一个脚手架的初始化执行完成
 
-### 后续要做的事
-- [x] 脚手架添加更新命令（初步实现）
-- [ ] 模版添加 git hooks 初始化选项
-- [ ] 项目依赖版本号的处理
+### 支持的功能
+- [x] 可配置 css 预处理 less, scss
+- [x] 可配置 typescript
+- [x] 可配置 redux, mobx 状态 管理
+- [x] 可配置 React-router
+- [x] 开发环境 环境配置
+- [x] 可选择 单元测试 mocha
+- [x] 可配置 git hook
 
 ### 项目地址
 tiga-cli: https://github.com/IFmiss/tiga-cli
