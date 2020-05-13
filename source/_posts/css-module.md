@@ -72,6 +72,7 @@ css-module给 span 元素生成一个独一无二的全局 class 名称 `zEvk6qC
 ![css 编译结果](https://www.daiwei.site/static/blog/css-module/css编译结果.png)
 
 > 注意： 由于我使用的是 ts 开发环境，在以es6 引入的方式引入 less文件的时候，会被提示，index.less不是模块，网上看了一下，顶一下 *.less 模块就可以了，[来自这里](https://stackoverflow.com/questions/57635943/how-do-i-make-import-as-style-from-from-x-less-work)，代码如下
+
 ```ts
 // global.d.ts
 declare module '*.less' {
