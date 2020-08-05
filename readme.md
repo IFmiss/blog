@@ -7,4 +7,4 @@ public生成的文章存放于[ifmiss.github.io](https://github.com/IFmiss/ifmis
 我自己基于这个主题修改的小部分样式，如果用这个地址可以见[hexo-theme-next](https://github.com/IFmiss/hexo-theme-next.git)
 
 
-### 目前只做为和人博客维护在 www.daiwei.site/blog
+#### 地址 www.daiwei.site/blog
