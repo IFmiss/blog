@@ -2,7 +2,7 @@
 title: web安全-XSS
 date: 2020-10-11 16:47:23
 categories: web安全
-tags: [javascript, html]
+tags: [web安全]
 ---
 
 ### 一起学习了解一下 web安全相关的知识
@@ -51,5 +51,5 @@ document.write, eval, img 等等
 - 输入的内容需要做过滤或者转译（HTMLEncode）
 - 避免直接在cookie 中泄露用户隐私 http only
 - 采用POST 而非GET 提交表单
-- Content Security Policy
+- Content Security Policys
 
