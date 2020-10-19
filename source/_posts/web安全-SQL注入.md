@@ -13,7 +13,7 @@ select * from tb_user_info Where 'username' = 'dw' and 'password' = '123'
 ```
 但是如果输入
 username: `'' or 1 = 1 --`
-name: `''`
+password: `''`
 
 ```sql
 select * from tb_user_info Where 'username' = '' or 1 = 1 and 'password' = ''

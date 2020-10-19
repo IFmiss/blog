@@ -51,5 +51,4 @@ document.write, eval, img 等等
 - 输入的内容需要做过滤或者转译（HTMLEncode）
 - 避免直接在cookie 中泄露用户隐私 http only
 - 采用POST 而非GET 提交表单
-- Content Security Policys
-
+- [Content-Security-Policys](https://www.daiwei.site/blog/detail?id=42)
