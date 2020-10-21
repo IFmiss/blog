@@ -202,3 +202,77 @@ btn.onclick = function (event) {
 </script>
 ```
 > 注意 event 对象只在事件处理程序执行期间存在，一旦执行完毕，就会被销毁。
+
+### 事件类型
+Web 浏览器中可以发生很多种事件
+#### 用户界面事件（UIEvent）: 涉及与 BOM 交互的通用浏览器事件。
+  `load`, `unload`, `abort`, `error`, `select`, `resize`, `scroll`
+  > - 一般来说，任何在 `window` 上发生的事件，都可以通过给`body`元素上对应的属性赋值来指定， 这是因为 HTML 中没有 `window` 元素。这实际上是为了保证向后兼容的一个策略，但在所有浏览器中都 能得到很好的支持。
+  > - 根据 DOM2 Events，`load` 事件应该在 `document` 而非 `window` 上触发。可是为了向后兼容，所有浏览器都在 window 上实现了 `load` 事件。
+  > - `unload` 最常用于清理引用，以避免内存泄漏。
+  > 根据 DOM2 Events，`unload` 事件应该在 `body` 而非 window 上触发。可是为了向后兼容，所有浏览器都在 window 上实现了 `unload` 事件。
+  > 浏览器窗口在最大化和最小化时也会触发 `resize` 事件。
+#### 焦点事件（FocusEvent）: 在元素获得和失去焦点时触发。
+  `blur`, `focusin`, `focusout`, `focus`,
+  当焦点从页面中的一个元素移到另一个元素上时，会依次发生如下事件。
+  1. `focuscout` 在失去焦点的元素上触发。
+  2. `focusin` 在获得焦点的元素上触发。
+  3. `blur` 在失去焦点的元素上触发。
+  4. `focus` 在获得焦点的元素上触发。
+#### 鼠标事件（MouseEvent）：使用鼠标在页面上执行某些操作时触发。
+  - `click` 单击鼠标主键（通常是左键）或按键盘回车键时触发
+  - `dblclick` 双击
+  - `mousedown` 在用户按下任意鼠标键时触发。
+  - `mouseenter` 元素外到进入元素触发
+  - `mouseleave` 元素内到离开元素触发
+  - `mousemove` 在鼠标光标在元素上移动时反复触发
+  - `mouseout` 把鼠标光标从一个元素移到另一个元素上时触发
+  - `mouseover` 把鼠标光标从元素外部移到元素内部时触发
+  - `mouseup` 在用户释放鼠标键时触发
+  > 除了 `mouseenter` 和 `mouseleave`，所有鼠标事件都会冒泡， 都可以被取消，而这会影响浏览器的默认行为。
+#### 滚轮事件（WheelEvent）：使用鼠标滚轮（或类似设备）时触发。
+  - `mousewheel` 滚轮滚动事件
+#### 输入事件（InputEvent）：向文档中输入文本时触发。
+  `keydown` 用户按下键盘上某个键时触发，而且持续按住会重复触发。
+  `keypress` 用户按下键盘上某个键并产生字符时触发，而且持续按住会重复触发。Esc 键也会 触发这个事件。DOM3 Events 废弃了 keypress 事件，而推荐 `textInput` 事件。
+  `keyup` 用户释放键盘上某个键时触发。
+  > - 输入事件只有一个，即 textInput。这个事件是对 keypress 事件的扩展，用于在文本显示给用 户之前更方便地截获文本输入。textInput 会在文本被插入到文本框之前触发。
+  > - 键盘事件支持与鼠标事件相同的修饰键。shiftKey、ctrlKey、altKey 和 metaKey
+
+顺序：`keydown` => (`textInput` | `keypress`) => 输入框文字显示 => `keyup`
+
+属性在键盘事件中都是可用的。
+#### 键盘事件（KeyboardEvent）：使用键盘在页面上执行某些操作时触发。
+
+#### 合成事件（CompositionEvent）：在使用某种 IME（Input Method Editor，输入法编辑器）输入 字符时触发。
+合成事件是 DOM3 Events 中新增的，用于处理通常使用 IME 输入时的复杂输入序列。IME 可以让用户输入物理键盘上没有的字符。例如，使用拉丁字母键盘的用户还可以使用 IME 输入日文。IME 通 常需要同时按下多个键才能输入一个字符。合成事件用于检测和控制这种输入。合成事件有以下 3 种：
+- compositionstart，在 IME 的文本合成系统打开时触发，表示输入即将开始； 
+- compositionupdate，在新字符插入输入字段时触发； 
+- compositionend，在 IME 的文本合成系统关闭时触发，表示恢复正常键盘输入。
+
+除了这些事件类型之外，HTML5 还定义了另一组事件，而浏览器通常在 DOM 和 BOM 上实现专有事 件。
+
+#### contextmenu
+允许开发者取消默认的上下文菜单并提供自定义菜单。
+
+#### beforeunload
+beforeunload 事件会在 window 上触发，用意是给开发者提供阻止页面被卸载的机会。
+
+#### DOMContentLoaded
+window 的 load 事件会在页面完全加载后触发，因为要等待很多外部资源加载完成，所以会花费 较长时间。而 DOMContentLoaded 事件会在 DOM 树构建完成后立即触发，而不用等待图片、JavaScript 文件、CSS 文件或其他资源加载完成。
+
+#### readystatechange
+提供文档或元素加载状态的信息，但行为有时候并不稳定。支持 readystatechange 事件的每个 对象都有一个 readyState 属性，该属性具有一个以下列出的可能的字符串值。
+
+- uninitialized：对象存在并尚未初始化。 
+- loading：对象正在加载数据
+- loaded：对象已经加载完数据。
+- interactive：对象可以交互，但尚未加载完成。 
+- complete：对象加载完成。
+
+> 使用 readystatechange 只能尽量模拟 DOMContentLoaded，但做不到分毫不差。load 事件和 readystatechange 事件发生的顺序在不同页面中是不一样的。
+
+#### hashchange
+HTML5 增加了 hashchange 事件，用于在 URL 散列值（URL 最后#后面的部分）发生变化时通知 开发者。单页面应该hash路由的跳转使用的就是监听 `hashchange`
+
+
