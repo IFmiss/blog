@@ -139,14 +139,90 @@ Progress Events 是 W3C 的工作草案，定义了客户端服务器端通�
 
 跨源资源共享（CORS，Cross-Origin Resource Sharing）定义了浏览器与服务器如何实现跨源通信。
 
-对于简单的请求，比如 GET 或 POST 请求，没有自定义头部，而且请求体是 text/plain 类型， 这样的请求在发送时会有一个额外的头部叫 Origin。
+对于简单的请求（最后一段会介绍），比如 GET 或 POST 请求，没有自定义头部，而且请求体是 text/plain 类型， 这样的请求在发送时会有一个额外的头部叫 Origin。
 
 ```http
 Origin: http://www.nczonline.net
 ```
 
-> `简单请求`
-> `非简单请求`
+如果服务器决定响应请求，那么应该发送 Access-Control-Allow-Origin 头部，包含相同的源； 或者如果资源是公开的，那么就包含"*"
+```http
+Access-Control-Allow-Origin: http://www.nczonline.net
+```
+如果没有这个头部，或者有但源不匹配，则表明不会响应浏览器请求。否则，服务器就会处理这个 请求。注意，**无论请求还是响应都不会包含 cookie 信息**。
+
+跨域 XHR 对象允许访问 status 和 statusText 属性，也允许同步请求。出于安全考虑，跨域 XHR 对象也施加了一些额外限制。
+- 不能使用 setRequestHeader()设置自定义头部。
+- 不能发送和接收 cookie。
+- getAllResponseHeaders()方法始终返回空字符串。
+
+#### 预检请求
+CORS 通过一种叫预检请求（preflighted request）的服务器验证机制，允许使用自定义头部、除 GET 和 POST 之外的方法，以及不同请求体内容类型。在要发送涉及上述某种高级选项的请求时，会先向服 务器发送一个“预检”请求。这个请求使用 OPTIONS 方法发送并包含以下头部。(简而言之就是非简单请求会触发预检请求)
+
+**在进行http请求时，比如 post 且携带 ncz header头，请求 http://www.nczonline.net， 则会触发 options 请求**
+
+options 会返回以下响应头
+```http
+Access-Control-Allow-Origin: http://www.nczonline.net   允许请求的origin
+Access-Control-Allow-Methods: GET,POST    允许的方法（逗号分割）
+Access-Control-Allow-Headers: auth,ncz    允许的头部信息（逗号分割）
+Access-Control-Max-Age: 1728000    缓存预检请求的秒数
+```
+预检请求返回后，结果会按响应指定的时间缓存一段时间。换句话说，只有第一次发送这种类型的 请求时才会多发送一次额外的 HTTP 请求。
+
+#### 凭据请求
+默认情况下，跨域请求不提供凭据（cookie，http认证和客户端ssl证书）可以通过将 withCredentials 属性设置为 true 来表明请求会发送凭据。
+服务端需要设置以下响应头
+```http
+Access-Control-Allow-Credentials: true
+```
+如果发送了凭据请求而服务器返回的响应中没有这个头部， 则浏览器不会把响应交给 JavaScript （responseText 是空字符串，status 是 0，onerror()被调用）。
+> **注意，服务器也可以在预检请求的 响应中发送这个 HTTP 头部，以表明这个源允许发送凭据请求。**
+
+#### JSONP
+JSON with padding 的简写, 是在 Web 服务上流行的一种 JSON 变体。JSONP 看起来 跟 JSON 一样，只是会被包在一个函数调用里，比如:
+callback({ "name": "Nicholas" });
+
+JSONP 格式包含两个部分：
+- **回调** 页面接收到响应之后应该调用的函数，通常回调 函数的名称是通过请求来动态指定的
+- **数据** 就是作为参数传给回调函数的 JSON 数据。
+```http
+http://freegeoip.net/json/?callback=handleResponse
+```
+JSONP 服务通常支持以查询字符串形式指定回调函 数的名称。比如这个例子就把回调函数的名字指定为 handleResponse()。
+
+> **JSONP 调用是通过动态创建 `script` 元素并为 src 属性指定跨域 URL 实现的。此时的 `script` 与 `img`元素类似，能够不受限制地从其他域加载资源。因为 JSONP 是有效的 JavaScript，所以 JSONP 响应在被加载完成之后会立即执行。**
+
+```js
+function handleResponse(response) {
+  console.log(` You're at IP address ${response.ip}, which is in ${response.city}, ${response.region_name}`);
+}
+let script = document.createElement("script");
+script.src = "http://freegeoip.net/json/?callback=handleResponse";
+document.body.insertBefore(script, document.body.firstChild);
+```
+JSONP 由于其简单易用，在开发者中非常流行。相比于图片探测，使用 JSONP 可以直接访问响应， 实现浏览器与服务器的双向通信。不过 JSONP 也有一些缺点。
+- 首先，JSONP 是从不同的域拉取可执行代码。如果这个域并不可信，则可能在响应中加入恶意内容。 此时除了完全删除 JSONP 没有其他办法。在使用不受控的 Web 服务时，一定要保证是可以信任的。
+- 第二个缺点是不好确定 JSONP 请求是否失败。虽然 HTML5 规定了 `script` 元素的 onerror 事件 处理程序，但还没有被任何浏览器实现。为此，开发者经常使用计时器来决定是否放弃等待响应。这种 方式并不准确，毕竟不同用户的网络连接速度和带宽是不一样的。
 
 
+
+
+### `简单请求`
+同时满足以下条件
+- 以下三种方法之一
+  - **`GET`**
+  - **`POST`**
+  - **`HEAD`**
+- HTTP的头信息不超出以下几种字段
+  - **`Content-Type`** 仅限 `application/x-www-form-urlencoded`、`multipart/form-data`、`text/plain`
+  - **`Accept`**
+  - **`Accept-Language`**
+  - **`Content-Language`**
+- 请求中没有使用 `ReadableStream` 对象
+- 请求中的任意 `XMLHttpRequestUpload` 对象均没有注册任何事件监听器
+  > XMLHttpRequest.upload 属性返回一个 XMLHttpRequestUpload对象，用来表示上传的进度
+
+### `非简单请求`
+不同时满足以上4个条件属于非简单请求
 
