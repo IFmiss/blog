@@ -25,18 +25,20 @@ tags: [js]
 </html>
 ```
 在点击页面中的 `div` 元素后，click 事件会以如下顺序发生：
-(1) div
-(2) body
-(3) html
-(4) document
+1. div
+2. body
+3. html
+4. document
+
 也就是说，`div` 元素，即被点击的元素，最先触发 click 事件。然后，click 事件沿 DOM 树一 路向上，在经过的每个节点上依次触发，直至到达 document 对象。
 
 ### 事件捕获
 事件捕获的意思是最不具体的节 点应该最先收到事件，而最具体的节点应该最后收到事件。事件捕获实际上是为了在事件到达最终目标 前拦截事件。如果前面的例子使用事件捕获，则点击 `div` 元素会以下列顺序触发 click 事件：
-(1) document
-(2) html
-(3) body
-(4) div
+1. document
+2. html
+3. body
+4. div
+
 在事件捕获中，click 事件首先由 `document` 元素捕获，然后沿 DOM 树依次向下传播，直至到达 实际的目标元素 `div`。
 
 ### DOM 事件流

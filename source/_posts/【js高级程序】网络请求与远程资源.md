@@ -205,9 +205,6 @@ JSONP 由于其简单易用，在开发者中非常流行。相比于图片探�
 - 首先，JSONP 是从不同的域拉取可执行代码。如果这个域并不可信，则可能在响应中加入恶意内容。 此时除了完全删除 JSONP 没有其他办法。在使用不受控的 Web 服务时，一定要保证是可以信任的。
 - 第二个缺点是不好确定 JSONP 请求是否失败。虽然 HTML5 规定了 `script` 元素的 onerror 事件 处理程序，但还没有被任何浏览器实现。为此，开发者经常使用计时器来决定是否放弃等待响应。这种 方式并不准确，毕竟不同用户的网络连接速度和带宽是不一样的。
 
-
-
-
 ### `简单请求`
 同时满足以下条件
 - 以下三种方法之一
@@ -225,4 +222,111 @@ JSONP 由于其简单易用，在开发者中非常流行。相比于图片探�
 
 ### `非简单请求`
 不同时满足以上4个条件属于非简单请求
+
+### Fetch API
+Fetch API 能够执行 XMLHttpRequest 对象的所有任务，但更容易使用，接口也更现代化，能够在 Web 工作线程等现代 Web 工具中使用。**XMLHttpRequest 可以选择异步，而 Fetch API 则必须是异步。**
+
+#### 处理状态码和请求失败
+Fetch API 支持通过 Response 的 status（状态码）和 statusText（状态文本）属性检查响应状 态
+```js
+fetch('/bar')
+  .then((response) => {
+    console.log(response.status); // 200
+    console.log(response.statusText); // OK
+  });
+```
+通常状态码为 200 时就会被认为成功了，其他情况可以被认为未成功。为区分这两种情况，可以在 状态码非 200~299 时检查 Response 对象的 ok 属性：
+
+#### 自定义选项 （fetch API 725 页有详细说明）
+fetch的第二个参数（只列举自己没有用的，或者用的比较少不清楚的）
+- `cache` 用于控制浏览器与 HTTP缓存的交互。要跟踪缓存的重定向，请求的 redirect 属性值必须是"follow"， 而且必须符合同源策略限制。必须是下列值之一
+  - `Default`  (默认值)
+    - fetch()返回命中的有效缓存。不发送请求
+    - 命中无效（stale）缓存会发送条件式请求。如果响应已经改变，则更新缓存的值。然后 fetch()返回缓存的值
+    - 未命中缓存会发送请求，并缓存响应。然后 fetch()返回响应
+  - `no-store`
+    - 浏览器不检查缓存，直接发送请求
+    - 不缓存响应，直接通过 fetch()返回
+  - `reload`
+    - 浏览器不检查缓存，直接发送请求
+    - 缓存响应，再通过 fetch()返回
+  - `no-cache`
+    - 无论命中有效缓存还是无效缓存都会发送条件式请求。如果响应已经改变，则更新缓存的值。然后 fetch()返回缓存的值
+    - 未命中缓存会发送请求，并缓存响应。然后 fetch()返回响应
+
+- `keepalive` 用于指示浏览器允许请求存在时间超出页面生命周期。适合报告事件或分析，比如页面在 fetch() 请求后很快卸载。设置 keepalive 标志的 `fetch()` 请求可用于替代 `Navigator.sendBeacon()` 必须是布尔值 (默认值 false)
+
+- `intergrity` 用于强制子资源完整性 (Subresource Integrity SRI) 是一项安全功能，它使浏览器可以验证是否获取了他们获取的资源（例如，从CDN中获取的资源）而没有意外的操作。通过允许您提供获取的资源必须匹配的加密哈希来工作。
+  > 必须是包含子资源完整性标识符的字符串
+
+- `mode` 用于指定请求模式。这个模式决定来自跨源请求的响应是否有效，以及客户端可以读取多少响应。 违反这里指定模式的请求会抛出错误
+  - `cors` 允许遵守 CORS 协议的跨源请求。响应是“CORS 过滤的响应”，意思是响应中可以访问的浏览器头部是经过浏览器强制白名单过滤的 (默认值)
+  - `no-cors` 允许不需要发送预检请求的跨源请求（HEAD、GET 和只带有满足 CORS 请求头部的POST）。
+  - `same-origin` 任何跨源请求都不允许发送
+  - `navigate` 用于支持 HTML 导航，只在文档间导航时使用。基本用不到
+
+- `redirect` 用于指定如何处理重定向响应（状态码为 301、302、303、307 或 308）
+  - `follow` 跟踪重定向请求，以最终非重定向 URL 的响应作为最终响应 (默认值)
+  - `error` 重定向请求会抛出错误
+  - `manual` 不跟踪重定向请求，而是返回 opaqueredirect 类型的响应，同时仍然暴露期望的重 定向 URL。允许以手动方式跟踪重定向
+
+- `referrer` 用于指定 HTTP 的 Referer 头部的内容
+  - `no-referrer` 以 no-referrer 作为值
+  - `client/about:client` 以当前 URL 或 no-referrer（取决于来源策略 referrerPolicy）作为值 (默认值)
+  - `<URL>` 以伪造 URL 作为值。伪造 URL 的源必须与执行脚本的源匹配
+
+- `referrerPolicy` 用于指定 HTTP 的 Referer 头部
+  - `no-referrer` 请求中不包含 Referer 头部
+  - `no-referrer-when-downgrade` (默认值)
+    - 对于从安全 HTTPS 上下文发送到 HTTP URL 的请求，不包含 Referer 头部
+    - 对于所有其他请求，将 Referer 设置为完整 URL
+  - `origin` 对于所有请求，将 Referer 设置为只包含源
+  - `same-origin`
+    - 对于跨源请求，不包含 Referer 头部
+    - 对于同源请求，将 Referer 设置为完整 URL
+  - `strict-origin`
+    - 对于从安全 HTTPS 上下文发送到 HTTP URL 的请求，不包含 Referer 头部
+    - 对于所有其他请求，将 Referer 设置为只包含源
+  - `origin-when-cross-origin`
+    - 对于跨源请求，将 Referer 设置为只包含源
+    - 对于同源请求，将 Referer 设置为完整 URL
+  - `strict-origin-when-cross-origin`
+    - 对于从安全 HTTPS 上下文发送到 HTTP URL 的请求，不包含 Referer 头部
+    - 对于所有其他跨源请求，将 Referer 设置为只包含源
+    - 对于同源请求，将 Referer 设置为完整 URL
+  - `unsafe-url` 对于所有请求，将 Referer 设置为完整 URL
+
+- `signal`
+  用于支持通过 AbortController 中断进行中的 fetch()请求
+  必须是 AbortSignal 的实例
+  默认为未关联控制器的 AbortSignal 实例
+
+#### 中断请求
+Fetch API 支持通过 `AbortController/AbortSignal` 对中断请求。调用 `AbortController.abort()` 会中断所有网络传输，特别适合希望停止传输大型负载的情况。中断进行中的 fetch()请求会 导致包含错误的拒绝。
+```js
+let abortController = new AbortController();
+fetch('wikipedia.zip', { signal: abortController.signal })
+  .catch(() => console.log('aborted!');
+
+// 10 毫秒后中断请求
+setTimeout(() => abortController.abort(), 10);
+// 已经中断
+```
+
+#### Headers对象
+Headers 对象是所有外发请求和入站响应头部的容器。每个外发的 Request 实例都包含一个空的 Headers 实例，可以通过 Request.prototype.headers 访问，每个入站 Response 实例也可以通过 Response.prototype.headers 访问包含着响应头部的 Headers 对象。这两个属性都是可修改属性。**使用 new Headers()也可以创建一个新实例。**
+
+Headers 对象与 Map 对象极为相似，但是Headers 可以初始化对象，而map 不可以
+```js
+let seed = {foo: 'bar'};
+
+let h = new Headers(seed);
+console.log(h.get('foo')); // bar
+h.append('test', '1111');
+
+let m = new Map(seed);
+// TypeError: object is not iterable
+```
+一个 HTTP 头部字段可以有多个值，而 Headers 对象通过 append()方法支持添加多个值。在 Headers 实例中还不存在的头部上调用 append()方法相当于调用 set()。
+
 
