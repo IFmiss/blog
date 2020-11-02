@@ -329,4 +329,139 @@ let m = new Map(seed);
 ```
 一个 HTTP 头部字段可以有多个值，而 Headers 对象通过 append()方法支持添加多个值。在 Headers 实例中还不存在的头部上调用 append()方法相当于调用 set()。
 
+#### Request 对象
+##### 创建 Request 对象
+```js
+let r = new Request('https://foo.com');
+console.log(r);
+```
+
+##### 克隆 Request 对象
+Fetch API 提供了两种不太一样的方式用于创建 Request 对象的副本：使用 Request 构造函数和使 用 clone()方法。
+```js
+let r1 = new Request('https://foo.com', {
+  method: 'POST',
+  body: 'foobar'
+});
+let r2 = r1.clone();
+
+console.log(r1.url); // https://foo.com/
+console.log(r2.url); // https://foo.com/
+
+console.log(r1.bodyUsed); // false
+console.log(r2.bodyUsed); // false
+```
+
+#### Response 对象
+##### 创建 Response 对象
+可以通过构造函数初始化 Response 对象且不需要参数。此时响应实例的属性均为默认值，因为它 并不代表实际的 HTTP 响应：
+
+```js
+let r = new Response();
+console.log(r);
+
+// Response {
+//    body: (...)
+//    bodyUsed: false
+//    headers: Headers {}
+//    ok: true
+//    redirected: false
+//    status: 200
+//    statusText: "OK"
+//    type: "default"
+//    url: "" 
+// }
+```
+Response 构造函数接收一个可选的 body 参数。这个 body 可以是 null，等同于 fetch()参数 init 中的 body。还可以接收一个可选的 init 对象，这个对象可以包含下表所列的键和值。
+- `headers`
+- `status`
+- `statusText`
+
+##### 克隆 Response 对象
+克隆 Response 对象的主要方式是使用 clone()方法，这个方法会创建一个一模一样的副本，不会覆盖任何值。这样不会将任何请求的请求体标记为已使用：
+```js
+let r1 = new Response('foobar');
+let r2 = r1.clone();
+
+console.log(r1.bodyUsed); // false
+console.log(r2.bodyUsed); // false
+```
+> 如果响应对象的 bodyUsed 属性为 true（即响应体已被读取），则不能再创建这个对象的副本。在 响应体被读取之后再克隆会导致抛出 TypeError。
+
+#### Request、Response 及 Body 混入
+Request 和 Response 都使用了 Fetch API 的 Body 混入，以实现两者承担有效载荷的能力。
+通常，将 Request 和 Response 主体作为流来使用主要有两个原因。
+- 有效载荷的大小 可能会导致网络延迟
+- 流 API 本身在处理有效载荷方面是有优势的
+除此之外，最好是一次性获取资源主体。
+
+##### Body.text()
+Body.text()方法返回期约，解决为将缓冲区转存得到的 UTF-8 格式字符串。
+
+##### Body.json()
+Body.json()方法返回期约，解决为将缓冲区转存得到的 JSON。
+
+##### Body.formData()
+浏览器可以将 FormData 对象序列化/反序列化为主体。
+
+##### Body.arrayBuffer()
+有时候，可能需要以原始二进制格式查看和修改主体。为此，可以使用 Body.arrayBuffer()将 主体内容转换为 ArrayBuffer 实例。Body.arrayBuffer()方法返回期约，解决为将缓冲区转存得到 的 ArrayBuffer 实例。
+
+##### Body.blob()
+有时候，可能需要以原始二进制格式使用主体，不用查看和修改。为此，可以使用 Body.blob() 将主体内容转换为 Blob 实例。Body.blob()方法返回期约，解决为将缓冲区转存得到的 Blob 实例。
+
+
+### Beacon API
+这个 API 给 navigator 对象增加了一个 sendBeacon()方法。这个简单的方法接收一个 URL 和一个数据有效载荷参数，并会发送一个 POST 请求。可选的数据有效载荷参数有 ArrayBufferView、Blob、DOMString、FormData 实例。如果请 求成功进入了最终要发送的任务队列，则这个方法返回 true，否则返回 false。
+
+```js
+// 发送 POST 请求
+// URL: 'https://example.com/analytics-reporting-url' // 请求负载：'{foo: "bar"}'
+
+navigator.sendBeacon('https://example.com/analytics-reporting-url', '{foo: "bar"}');
+```
+- sendBeacon()并不是只能在页面生命周期末尾使用，而是任何时候都可以使用。
+- 调用 sendBeacon()后，浏览器会把请求添加到一个内部的请求队列。浏览器会主动地发送队 列中的请求。
+- 浏览器保证在原始页面已经关闭的情况下也会发送请求。
+- 状态码、超时和其他网络原因造成的失败完全是不透明的，不能通过编程方式处理。
+- 信标（beacon）请求会携带调用 sendBeacon()时所有相关的 cookie。
+
+### Web Socket
+Web Socket（套接字）的目标是通过一个长时连接实现与服务器全双工、双向的通信。在 JavaScript 中创建 Web Socket 时，一个 HTTP 请求会发送到服务器以初始化连接。服务器响应后，连接使用 HTTP 的 Upgrade 头部从 HTTP 协议切换到 Web Socket 协议。这意味着 Web Socket 不能通过标准 HTTP 服务 器实现，而必须使用支持该协议的专有服务器。
+
+Web Socket 使用了自定义协议: ws://和 wss://。前者是不安全的连接，后者是安全连接。
+
+#### api
+要创建一个新的 Web Socket，就要实例化一个 WebSocket 对象并传入提供连接的 URL：
+```js
+let socket = new WebSocket("ws://www.example.com/server.php");
+```
+> 必须给 WebSocket 构造函数传入一个绝对 URL。同源策略不适用于 Web Socket，因此可以 打开到任意站点的连接。至于是否与来自特定源的页面通信，则完全取决于服务器。（在握手阶段就可 以确定请求来自哪里。）
+
+浏览器会在初始化 WebSocket 对象之后立即创建连接。 与 XHR 类似， WebSocket 也有一个 readyState 属性表示当前状态。
+
+- WebSocket.OPENING（0）：连接正在建立。
+- WebSocket.OPEN（1）：连接已经建立。
+- WebSocket.CLOSING（2）：连接正在关闭。
+- WebSocket.CLOSE（3）：连接已经关闭。
+WebSocket 对象没有 readystatechange 事件， 而是有与上述不同状态对应的其他事件。 readyState 值从 0 开始。
+
+#### 发送接受数据
+打开 Web Socket 之后，可以通过连接发送和接收数据。要向服务器发送数据，使用 send()方法并 传入一个字符串、ArrayBuffer 或 Blob
+
+服务器向客户端发送消息时，WebSocket 对象上会触发 message 事件。
+
+#### 其他事件
+WebSocket 对象在连接生命周期中有可能触发 3 个其他事件。
+- open：在连接成功建立时触发。
+- error：在发生错误时触发。连接无法存续。
+- close：在连接关闭时触发。
+
+### 安全
+- SSL
+- token
+- POST not GET
+- refefer
+- csp
+- cookie http only
 
