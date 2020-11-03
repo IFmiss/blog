@@ -141,6 +141,7 @@ ES6 模块系统也增加了一些新行为。
 - 模块顶级 this 的值是 undefined（常规脚本中是 window）。
 - 模块中的 var 声明不会添加到 window 对象。
 - ES6 模块是异步加载和执行的。
+> ES6根本不会关心是否发生了"循环加载"，只是生成一个指向被加载模块的引用，需要开发者自己保证，真正取值的时候能够取到值。
 
 #### 模块导出
 ES6 模块支持两种导出：
@@ -160,7 +161,7 @@ export default foo;
 export { foo as default };
 export { foo as default, bar };
 ```
-
+> ES6 模块不是对象，它的对外接口只是一种静态定义，在代码静态解析阶段就会生成。在import 代码引入之前，是不会执行js代码块的
 > export 关键字用于声明一个值为命名导出。导出语句必须在模块顶级，不能嵌套在某个块中
 
 #### 模块导入
@@ -169,6 +170,7 @@ export { foo as default, bar };
 import { foo } from './fooModule.js';
 import foo from './fooModule.js';
 ```
+> js 代码被 JavaScript 引擎编译时 foo 只是作为变量存储了 const foo = ...., fooModule.js 中导出的方法引用，当执行foo方法的时候，就会找到引用方法的代码并执行
 
 #### 模块转移导出
 模块导入的值可以直接通过管道转移到导出。此时，也可以将默认导出转换为命名导出，或者相反。 如果想把一个模块的所有命名导出集中在一块，可以像下面这样在 bar.js 中使用*导出：
