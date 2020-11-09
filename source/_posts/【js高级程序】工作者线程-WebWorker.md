@@ -259,6 +259,32 @@ self.onmessage = ({ports}) => {
 // result: from port1 5! = 120
 ```
 
+#### BroadcastChannel
+**同源脚本**能够通过 BroadcastChannel 相互之间发送和接收消息。这种通道类型的设置比较简单， 不需要像 MessageChannel 那样转移乱糟糟的端口。
+```js
+// ./testWorker.js
+const channel = new BroadcastChannel('worker_channel');
+channel.addEventListener('message', (res) => {
+  console.log(`heard ${res.data} in worker`)
+  channel.postMessage('bar')
+});
+
+
+// main.js
+const channel = new BroadcastChannel('worker_channel');
+const worker = new Worker('./testWorker.js');
+
+channel.onmessage = ({data}) => {
+  console.log(`heard ${data} on page`)
+}
+
+setTimeout(() => channel.postMessage('foo'), 1000);
+
+// testWorker.js:26 heard foo in worker
+// index.tsx:167 heard bar on page
+```
+> 这里，页面在通过 BroadcastChannel 发送消息之前会先等 1 秒钟。因为这种信道没有端口所有权的概念，所以如果没有实体监听这个信道，广播的消息就不会有人处理。在这种情况下，如果没有 setTimeout()，则由于初始化工作者线程的延迟，就会导致消息已经发送了，但工作者线程上的消息 处理程序还没有就位。
+
 
 [Web Worker 使用教程](http://www.ruanyifeng.com/blog/2018/07/web-worker.html)
 
