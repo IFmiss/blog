@@ -86,5 +86,88 @@ ServiceWorkerRegistration支持事件处理程序:
 - `waiting` waiting 等待 状态 其他同上
 - `active` activating 或 active（活动）的服务工作者线程 其他同上
 
+#### 使用 ServiceWorker 对象
+ServiceWorker 对象可以通过两种方式获得：通过 ServiceWorkerContainer 对象的 controller 属性和通过 ServiceWorkerRegistration 的 active 属性。
+
+ServiceWorker 支持以下事件处理程序。
+- `onstatechange` 此事件会在 ServiceWorker.state 变化时发生。
+- `scriptURL` 解析后注册服务工作者线程的 URL。
+- `state` 表示服务工作者线程状态的字符串
+  - installing
+  - installed
+  - activating 激活中
+  - activated  已激活
+  - redundant
+
+#### ServiceWorkerGlobalScope
+在服务工作者线程内部，全局上下文是 ServiceWorkerGlobalScope 的实例。
+服务工作者线程可以通 过 self 关键字访问该全局上下文。
+```js
+self.caches;
+self.skipWaiting();
+```
+- `caches` 返回服务工作者线程的 CacheStorage 对象
+- `clients` 返回服务工作者线程的 Clients 接口，用于访问底层 Client 对象
+- `registration` 返回服务工作者线程的 ServiceWorkerRegistration 对象。
+- `skipWaiting()` 强制服务工作者线程进入活动状态；需要跟 Clients.claim()一起使用。
+- `fetch()` 在服务工作者线程内发送常规网络请求；用于在服务工作者线程确定有必要发送实 际网络请求（而不是返回缓存值）时
+
+#### event
+- `install` 在服务工作者线程进入安装状态时触发, 这是服务工作者线程接收的第一个事件，在线程一开始执行时就会触发。
+- `activate` 在服务工作者线程进入激活或已激活状态时触发
+- `fetch` 在服务工作者线程截获来自主页面的 fetch()请求时触发。服务工作者线程的 fetch 事件处理程序可以访问 FetchEvent，可以根据需要调整输出。
+- `message` 在服务工作者线程通过 postMesssage()获取数据时触发。也可以在 self.onmessage 属性上指定该事件的处理程序。
+- `notificationclick` 在系统告诉浏览器用户点击了 ServiceWorkerRegistration.showNotification()生成的通知时触发。
+- `notificationclose` 在系统告诉浏览器用户关闭或取消显示了 ServiceWorkerRegistration.showNotification()生成的通知时触发。
+- `push` 在服务工作者线程接收到推送消息时触发。
+- `pushsubscriptionchange` 在应用控制外的因素（非 JavaScript 显式操作）导致推送订阅状态变化时触发。
+
+#### 服务工作者线程作用域限制
+**服务工作者线程只能拦截其作用域内的客户端发送的请求。**
+根目录
+```js
+navigator.serviceWorker.register('/serviceWorker.js', {
+  scope: './' // 根目录
+}).then((serviceWorkerRegistration) => {
+  console.log(serviceWorkerRegistration.scope);
+  // https://example.com/
+});
+
+// 以下请求都会被拦截：
+// fetch('/foo.js');
+// fetch('/foo/fooScript.js');
+// fetch('/baz/bazScript.js');
+```
+
+子目录
+```js
+navigator.serviceWorker.register('/serviceWorker.js', {
+  scope: './foo' // 根目录
+}).then((serviceWorkerRegistration) => {
+  console.log(serviceWorkerRegistration.scope);
+  // https://example.com/
+});
+// 以下请求都会被拦截：
+// fetch('/foo/fooScript.js');
+
+// 以下不会被拦截
+// fetch('/foo.js');
+// fetch('/baz/bazScript.js');
+```
+
+#### 服务工作者线程缓存
+**服务工作者线程缓存不自动缓存任何请求。**所有缓存都必须明确指定。
+**服务工作者线程缓存没有到期失效的概念。**除非明确删除，否则缓存内容一直有效。
+**服务工作者线程缓存必须手动更新和删除。**
+**缓存版本必须手动管理。**每次服务工作者线程更新，新服务工作者线程负责提供新的缓存键以 保存新缓存。
+**唯一的浏览器强制逐出策略基于服务工作者线程缓存占用的空间。**服务工作者线程负责管理自 己缓存占用的空间。缓存超过浏览器限制时，浏览器会基于最近最少使用（LRU，Least Recently Used）原则为新缓存腾出空间。
+
+##### CacheStorage
+CacheStorage 对象是映射到 Cache 对象的字符串键/值存储。CacheStorage 提供的 API 类似于 异步 Map。CacheStorage 的接口通过全局对象的 caches 属性暴露出来。
+- caches.open(str) 获取缓存的对应 key 的value信息，没有会新创建
+- has(str)  检查缓存 str 是否存在
+- delete  删除缓存
+- keys   keys的集合
+**全部返回 Promise**
 
 
