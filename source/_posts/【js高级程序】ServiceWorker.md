@@ -170,4 +170,142 @@ CacheStorage 对象是映射到 Cache 对象的字符串键/值存储。CacheSto
 - keys   keys的集合
 **全部返回 Promise**
 
+```js
+caches.open(CACHE_NAME)
+.then((cache) => {
+  cache.put(event.request, cloneRes)
+})
+```
+- `put(request, response)` 在键（Request 对象或 URL 字符串）和值（Response 对象）
+ 同时存在时用于添加缓存项。该方法返回期约，在添加成功后会解决。
+- `add(request)` 在只有 Request 对象或 URL 时使用此方法发送 fetch()请求，并缓存响应。该方法返回期约，期约在添加成功后会解决。
+- `addAll(requests)` 在希望填充全部缓存时使用，比如在服务工作者线程初始化时也初始化缓存。
+> 与 Map 类似，Cache 也有 delete()和 keys()方法。这些方法与 Map 上对应方法类似，但都基于期约
 
+检索cache 可以使用以下方法
+- `matchAll(request, options)` 
+返回期约，期约解决为匹配缓存中 Response 对象的数组。此方法对结构类似的缓存执行批量操作，比如删除所有缓存在/images 目录下的值。
+
+- `match(request, options)`
+返回期约，期约解决为匹配缓存中的Response对象，如果没命中缓存则返回。
+
+options 对象的参数
+- `cacheName`: 只有 CacheStorage.matchAll()支持。设置为字符串时，只会匹配 Cache 键为指定字符串的缓存值
+- `ignoreSearch`：设置为 true 时，在匹配 URL 时忽略查询字符串，包括请求查询和缓存键。例如，https://example.com?foo=bar 会匹配 https://example.com
+- `ignoreMethod`：设置为 true 时，在匹配 URL 时忽略请求查询的 HTTP 方法。比如下面的例子展示了 POST 请求匹配 GET 请求：
+
+```js
+const request1 = new Request('https://www.foo.com'); 
+const response1 = new Response('fooResponse');
+
+const postRequest1 = new Request('https://www.foo.com', {
+  method: 'POST'
+});
+caches.open('v1')
+.then((cache) => {
+  cache.put(request1, response1)
+    .then(() => cache.match(postRequest1))
+    .then(console.log) // undefined
+    .then(() => cache.match(postRequest1, {
+      ignoreMethod: true
+    }))
+    .then(console.log); // Response {}
+});
+// 忽略请求方式成功
+```
+- `ignoreVary`：匹配的时候考虑 HTTP 的 Vary 头部，该头部指定哪个请求头部导致服务器响应不同的值。ignoreVary 设置为 true 时，在匹配 URL 时忽略 Vary 头部。
+
+##### 最大存储空间
+浏览器需要限制缓存占用的磁盘空间，否则无限制存储势必会造成滥用。该存储空间的限制没有任 何规范定义，完全由浏览器供应商的个人喜好决定。
+```js
+navigator.storage.estimate().then(console.log);
+// {
+//   quota: 150411345100
+//   usage: 0
+//   usageDetails: {}
+// }
+```
+
+#### 理解服务工作者线程的生命周期
+1. 已解析（parsed）
+调用 navigator.serviceWorker.register()会启动创建服务工作者线程实例的过程。
+浏览器获取脚本文件，然后执行一些初始化任务，服务工作者线程的生命周期就开始了。
+(1) 确保服务脚本来自相同的源。
+(2) 确保在安全上下文中注册服务工作者线程。
+(3) 确保服务脚本可以被浏览器 JavaScript 解释器成功解析而不会抛出任何错误。
+(4) 捕获服务脚本的快照。下一次浏览器下载到服务脚本，会与这个快照对比差异，并据此决定是 否应该更新服务工作者线程。
+2. 安装中（installing）
+安装中状态频繁用于填充服务工作者线程的缓存。
+3. 已安装（installed）
+已安装状态也称为等待中（waiting）状态，意思是服务工作者线程此时没有别的事件要做，只是准 备在得到许可的时候去控制客户端。如果没有活动的服务工作者线程，则新安装的服务工作者线程会跳 到这个状态，并直接进入激活中状态，因为没有必要再等了。
+4. 激活中（activating）
+激活中状态表示服务工作者线程已经被浏览器选中即将变成可以控制页面的服务工作者线程。
+5. 已激活（activated）
+已激活状态表示服务工作者线程正在控制一个或多个客户端。
+6. 已失效（redundant）
+已失效状态表示服务工作者线程已被宣布死亡。不会再有事件发送给它，浏览器随时可能销毁它并 回收它的资源。
+
+
+#### 通过 updateViaCache 管理服务文件缓存
+为了让客户端能控制自己的更新行为，可以通过 updateViaCache 属性设置客户端对待服 务脚本的方式。该属性可以在注册服务工作者线程时定义，可以是如下三个字符串值。
+- `imports` 默认值。顶级服务脚本永远不会被缓存，但通过 importScripts()在服务工作者线 程内部导入的文件会按照 Cache-Control 头部设置纳入 HTTP 缓存管理
+- `all` 服务脚本没有任何特殊待遇。所有文件都会按照 Cache-Control 头部设置纳入 HTTP 缓 存管理。
+- `none` 顶级服务脚本和通过 importScripts()在服务工作者线程内部导入的文件永远都不会被缓存。
+```js
+navigator.serviceWorker.register('/serviceWorker.js', {
+  updateViaCache: 'none'
+});
+```
+
+#### 服务工作者线程消息
+与专用工作者线程和共享工作者线程一样，服务工作者线程也能与客户端通过 postMessage()交 换消息。
+
+#### 拦截 fetch 事件
+##### 从网络返回
+这个策略就是简单地转发 fetch 事件。
+```js
+self.onfetch = (fetchEvent) => {
+  fetchEvent.respondWith(fetch(fetchEvent.request));
+};
+```
+
+##### 从缓存返回
+这个策略其实就是缓存检查。
+```js
+self.onfetch = (fetchEvent) => {
+  fetchEvent.respondWith(caches.match(fetchEvent.request));
+};
+```
+
+##### 从网络返回，缓存作后备
+这个策略把从网络获取最新的数据作为首选，但如果缓存中有值也会返回缓存的值。如果应用程序 需要尽可能展示最新数据，但在离线的情况下仍要展示一些信息，就可以采用该策略
+```js
+self.onfetch = (fetchEvent) => {
+  fetchEvent.respondWith(
+    fetch(fetchEvent.request)
+    .catch(() => caches.match(fetchEvent.request))
+  );
+};
+```
+
+##### 从缓存返回，网络作后备
+这个策略优先考虑响应速度，但仍会在没有缓存的情况下发送网络请求。这是大多数渐进式 Web 应用程序（PWA，Progressive Web Application）采取的首选策略
+```js
+self.onfetch = (fetchEvent) => {
+  fetchEvent.respondWith(caches.match(fetchEvent.request)
+    .then((response) => response || fetch(fetchEvent.request))
+  );
+};
+```
+
+##### 通用后备
+应用程序需要考虑缓存和网络都不可用的情况。服务工作者线程可以在安装时缓存后备资源，然后 在缓存和网络都失败时返回它们：
+```js
+self.onfetch = (fetchEvent) => {
+  fetchEvent.respondWith( // 开始执行“从缓存返回，以网络为后备”策略
+    caches.match(fetchEvent.request)
+    .then((response) => response || fetch(fetchEvent.request))
+    .catch(() => caches.match('/fallback.html'))
+  );
+};
+```
