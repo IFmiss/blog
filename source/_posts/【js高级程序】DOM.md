@@ -316,3 +316,186 @@ alert(element.getAttribute("align")); // "left"
 removeAttribute()和 setAttribute()方法操作属性，而不是直接操作属性节点。
 
 ### DOM 编程
+#### 动态脚本
+script元素用于向网页中插入 JavaScript 代码，可以是 src 属性包含的外部文件，也可以是作为该 元素内容的源代码
+```js
+<script src="foo.js"></script>
+
+// or
+
+let script = document.createElement("script");
+script.src = "foo.js";
+document.body.appendChild(script);
+```
+> 通过 innerHTML 属性创建的 `script` 元素永远不会执行。浏览器会尽责地创建 `script` 元素， 以及其中的脚本文本， 但解析器会给这个 `script` 元素打上永不执行的标签。 只要是使用 innerHTML 创建的 `script` 元素，以后也没有办法强制其执行。
+
+#### 动态样式
+css 同 js
+```js
+function loadStyles(url){
+  let link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.type = "text/css";
+  link.href = url;
+  let head = document.getElementsByTagName("head")[0];
+  head.appendChild(link);
+}
+```
+
+#### MutationObserver
+MutationObserver 接口，可以在 DOM 被修改时异步执行回调。使 用 MutationObserver 可以观察整个文档、DOM 树的一部分，或某个元素。此外还可以观察元素属性、子节点、文本，或者前三者任意组合的变化。
+
+##### 基本用法
+MutationObserver 的实例要通过调用 MutationObserver 构造函数并传入一个回调函数来创建：
+```js
+let observer = new MutationObserver(() => console.log('DOM was mutated!'));
+```
+
+###### observe()方法
+新创建的 MutationObserver 实例不会关联 DOM 的任何部分。要把这个 observer 与 DOM 关 联起来，需要使用 observe()方法。
+接收两个必需的参数：要观察其变化的 DOM 节点，以及 一个 MutationObserverInit 对象。
+```js
+let observer = new MutationObserver(
+  () => console.log('<body> attributes changed')
+);
+
+observer.observe(document.body, {
+  attributes: true
+});
+```
+执行以上代码后， `body` 元素上任何属性发生变化都会被这个 `MutationObserver` 实例发现，然 后就会异步执行注册的回调函数。
+
+###### 回调与 MutationRecord
+每个回调都会收到一个 MutationRecord 实例的数组。
+
+###### disconnect 方法
+要提前终止执行回调，可以调用 disconnect()方法。
+```js
+observer.disconnect();
+```
+> 要想让已经加入任务队列的回调执行，可以使用 setTimeout()让已经入列的回调执行完毕再调用 disconnect()
+
+###### 复用 MutationObserver（MutationRecord 的 target）
+多次调用 observe()方法，可以复用一个 MutationObserver 对象观察多个不同的目标节点。此 时，MutationRecord 的 target 属性可以标识发生变化事件的目标节点。
+```js
+let observer = new MutationObserver(
+  (mutationRecords) => console.log(mutationRecords.map((x) => x.target))
+);
+
+// 向页面主体添加两个子节点
+let childA = document.createElement('div'),
+childB = document.createElement('span');
+
+document.body.appendChild(childA);
+document.body.appendChild(childB);
+
+// 观察两个子节点
+observer.observe(childA, { attributes: true });
+observer.observe(childB, { attributes: true });
+
+// 修改两个子节点的属性
+childA.setAttribute('foo', 'bar');
+childB.setAttribute('foo', 'bar');
+
+// [<div>, <span>]
+```
+
+###### 重用 MutationObserver
+调用 disconnect()并不会结束 MutationObserver 的生命。还可以重新使用这个观察者，再将 它关联到新的目标节点。
+
+##### MutationObserverInit 与观察范围
+粗略地讲，观察者可以观察的事 件包括属性变化、文本变化和子节点变化。
+
+###### 观察属性
+要为属性变化注册回调， 需要在 MutationObserverInit 对象中将 attributes 属性设置为 true
+
+attributes 设置为 true 的默认行为是观察所有属性，但不会在 MutationRecord 对象中记 录原来的属性值。如果想观察某个或某几个属性，可以使用 attributeFilter 属性来设置白名单，即 一个属性名字符串数组：
+```js
+observer.observe(document.body, { attributeFilter: ['foo'] });
+
+// 添加白名单属性
+document.body.setAttribute('foo', 'bar');
+
+// 添加被排除的属性
+document.body.setAttribute('baz', 'qux');
+
+// 只有 foo 属性的变化被记录了
+// [MutationRecord]
+```
+
+###### 观察字符数据
+MutationObserver 可以观察文本节点（如 Text、Comment 或 ProcessingInstruction 节点） 中字符的添加、删除和修改。 要为字符数据注册回调
+需要在 MutationObserverInit 对象中将 characterData 属性设置为 true，
+```js
+observer.observe(document.body.firstChild, { characterData: true });
+
+// 赋值为相同的字符串
+document.body.firstChild.textContent = 'foo';
+
+// 赋值为新字符串
+document.body.firstChild.textContent = 'bar';
+
+// 通过节点设置函数赋值
+document.body.firstChild.textContent = 'baz';
+
+
+// 以上变化都被记录下来了
+// [MutationRecord, MutationRecord, MutationRecord]
+```
+
+将 characterData 属性设置为 true 的默认行为不会在 MutationRecord 对象中记录原来的字符 数据。如果想在变化记录中保存原来的字符数据，可以将 characterDataOldValue 属性设置为 true
+
+```js
+observer.observe(document.body.firstChild, { characterDataOldValue: true });
+```
+
+> 设置元素文本内容的标准方式是 textContent 属性。Element 类也定义了 innerText 属性，与 textContent 类似。 但 innerText 的定义不严谨，浏览器间的实现也存在兼容性问题，因此不建议再使用了。
+
+###### 观察子节点
+要观察子节点，需要在 MutationObserverInit 对象中将 childList 属性设置为 true。
+
+```js
+observer.observe(document.body, { childList: true });
+```
+
+###### 观察子树
+默认情况下，MutationObserver 将观察的范围限定为一个元素及其子节点的变化。可以把观察 的范围扩展到这个元素的子树（所有后代节点），这需要在 MutationObserverInit 对象中将 subtree 属性设置为 true。
+```js
+observer.observe(document.body, { attributes: true, subtree: true });
+```
+
+##### 异步回调与记录队列
+MutationObserver 接口是出于性能考虑而设计的，其核心是异步回调与记录队列模型。
+为了在 大量变化事件发生时不影响性能，每次变化的信息（由观察者实例决定）会保存在 MutationRecord 实例中，然后添加到记录队列。
+这个队列对每个 MutationObserver 实例都是唯一的，是所有 DOM 变化事件的有序列表。
+
+###### 记录队列
+每次 MutationRecord 被添加到 MutationObserver 的记录队列时，**仅当之前没有已排期的微任 务回调时（队列中微任务长度为 0），才会将观察者注册的回调**（在初始化 MutationObserver 时传入） **作为微任务调度到任务队列上**。这样可以保证记录队列的内容不会被回调处理两次。
+不过在回调的微任务异步执行期间，有可能又会发生更多变化事件。因此被调用的**回调会接收到一 个 MutationRecord 实例的数组，顺序为它们进入记录队列的顺序**。回调要负责处理这个数组的每一 个实例，因为函数退出之后这些实现就不存在了。回调执行后，这些 MutationRecord 就用不着了， 因此记录队列会被清空，其内容会被丢弃。
+
+###### takeRecords()方法
+调用 MutationObserver 实例的 takeRecords()方法可以清空记录队列，取出并返回其中的所 有 MutationRecord 实例。
+```js
+let observer = new MutationObserver(
+  (mutationRecords) => console.log(mutationRecords)
+);
+
+observer.observe(document.body, { attributes: true });
+
+document.body.className = 'foo';
+document.body.className = 'bar';
+document.body.className = 'baz';
+
+console.log(observer.takeRecords());  // [MutationRecord, MutationRecord, MutationRecord]
+console.log(observer.takeRecords());  // []
+```
+这在希望断开与观察目标的联系，但又希望处理由于调用 disconnect()而被抛弃的记录队列中的 MutationRecord 实例时比较有用。
+
+##### 性能、内存与垃圾回收
+###### 1. MutationObserver 的引用
+MutationObserver 实例与目标节点之间的引用关系是非对称的。MutationObserver 拥有对要 观察的目标节点的弱引用。因为是弱引用，所以不会妨碍垃圾回收程序回收目标节点。
+然而，目标节点却拥有对 MutationObserver 的强引用。如果目标节点从 DOM 中被移除，随后 被垃圾回收，则关联的 MutationObserver 也会被垃圾回收。
+
+###### 2. MutationRecord 的引用
+记录队列中的每个 MutationRecord 实例至少包含对已有 DOM 节点的一个引用。如果变化是 childList 类型，则会包含多个节点的引用。记录队列和回调处理的默认行为是耗尽这个队列，处理 每个 MutationRecord，然后让它们超出作用域并被垃圾回收。
+有时候可能需要保存某个观察者的完整变化记录。保存这些 MutationRecord 实例，也就会保存 它们引用的节点，因而会妨碍这些节点被回收。如果需要尽快地释放内存，建议从每个 MutationRecord 中抽取出最有用的信息，然后保存到一个新对象中，最后抛弃 MutationRecord。
