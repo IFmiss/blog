@@ -27,7 +27,7 @@ tags: [js]
       - Element (title)
         - Text Sample Page
     - Element (body)
-      - Element p
+      - Element (p)
         - Text Hello world!
         
 其中，document 节点表示每个文档的根节点。在这里，根节点的唯一子节点是html元素，我们称之 为文档元素（documentElement）。
@@ -492,6 +492,7 @@ console.log(observer.takeRecords());  // []
 这在希望断开与观察目标的联系，但又希望处理由于调用 disconnect()而被抛弃的记录队列中的 MutationRecord 实例时比较有用。
 
 ##### 性能、内存与垃圾回收
+**将变化回调委托给微任务来执行可以保证事件同步触发，同时避免随之而来的混乱。为 MutationObserver 而实现的记录队列，可以保证即使变化事件被爆发式地触发，也不会显著地拖慢浏览器。**
 ###### 1. MutationObserver 的引用
 MutationObserver 实例与目标节点之间的引用关系是非对称的。MutationObserver 拥有对要 观察的目标节点的弱引用。因为是弱引用，所以不会妨碍垃圾回收程序回收目标节点。
 然而，目标节点却拥有对 MutationObserver 的强引用。如果目标节点从 DOM 中被移除，随后 被垃圾回收，则关联的 MutationObserver 也会被垃圾回收。
