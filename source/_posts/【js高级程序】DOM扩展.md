@@ -114,4 +114,61 @@ console.log(div.dataset.appId)  // 23456
 ```
 
 ##### 插入标记
+###### innerHTML 属性
+- 在读取 innerHTML 属性时，会返回元素所有后代的 HTML 字符串，包括元素、注释和文本节点。
+- 而在写入 innerHTML 时，则会根据提供的字符串值以新的 DOM 子树替代元素中原来包含的所有节点。 
 
+###### outerHTML 属性
+- 读取 outerHTML 属性时， 会返回调用它的元素（及所有后代元素）的 HTML 字符串。
+- 在写入 outerHTML 属性时，调用它的元素会被传入的 HTML 字符串经解释之后生成的 DOM 子树取代。
+
+###### insertAdjacentHTML()与 insertAdjacentText()
+关于插入标签的最后两个新增方法是 insertAdjacentHTML()和 insertAdjacentText()。
+第一个参数 必须是下列值中的一个：
+- `beforebegin` 插入当前元素前面，作为前一个同胞节点；
+- `afterbegin`  插入当前元素内部，作为新的子节点或放在第一个子节点前面；
+- `beforeend`   插入当前元素内部，作为新的子节点或放在最后一个子节点后面；
+- `afterend`    插入当前元素后面，作为下一个同胞节点。
+
+```html
+<!-- beforebegin -->
+<p>
+  <!-- afterbegin -->
+  foo
+  <!-- beforeend -->
+</p>
+<!-- afterend -->
+```
+> 在使用 innerHTML、 outerHTML 和 insertAdjacentHTML()之前，最好手动删除要被替换的元素上关联的事件处理程序和 JavaScript 对象。
+
+##### scrollIntoView
+DOM 规范中没有涉及的一个问题是如何滚动页面中的某个区域。HTML5 选择了标准化 scrollIntoView()。
+- `alignToTop`: bool值
+  - true： 窗口滚动后元素的顶部与视口顶部对齐。
+  - false： 窗口滚动后元素的底部与视口底部对齐。
+- `scrollIntoViewOptions` 是一个选项对象。
+  - `behavior` 定义过渡动画，可取的值为"smooth"和"auto"，默认为"auto"。
+  - `block` 定义垂直方向的对齐，可取的值为"start"、"center"、"end"和"nearest"，默 认为 "start"。
+  - `inline` 定义水平方向的对齐，可取的值为"start"、"center"、"end"和"nearest"，默 认为 "nearest"。
+
+#### 专有扩展
+##### children 属性
+```js
+let childCount = element.children.length;
+let firstChild = element.children[0];
+```
+
+##### contains()方法
+contains()方法应该在要搜索的祖先元素上调 用，参数是待确定的目标节点。
+```js
+console.log(document.documentElement.contains(document.body);
+```
+
+##### 插入标记
+###### innerText 属性
+- innerText 属性对应元素中包含的所有文本内容，无论文本在子树中哪个层级。在用于读取值时， innerText 会按照深度优先的顺序将子树中所有文本节点的值拼接起来。
+- 在用于写入值时，innerText 会移除元素的所有后代并插入一个包含该值的文本节点。
+
+###### outerText属性
+- outerText 与 innerText 是类似的， 只不过作用范围包含调用它的节点。
+- 要读取文本值时， outerText 与 innerText 实际上会返回同样的内容。
