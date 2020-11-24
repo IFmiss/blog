@@ -138,4 +138,154 @@ window.find();
 ```
 
 ### location 对象
+location 是最有用的 BOM 对象之一，提供了当前窗口中加载文档的信息，以及通常的导航功能
 
+#### 查询字符串
+`location.search`  返回了从问号开始直到 URL 末尾的所有内容
+
+##### URLSearchParams
+`URLSearchParams` 提供了一组标准 API 方法， 通过它们可以检查和修改查询字符串
+```js
+let qs = "?q=javascript&num=10";
+let searchParams = new URLSearchParams(qs);
+
+console.info(searchParams.toString()); // "q=javascript&num=10"
+searchParams.has('q');   // true
+searchParams.get('q');   // javascript
+
+searchParams.set('page', 3);
+console.info(searchParams.toString());  // q=javascript&num=10&page=3
+
+searchParams.delete("q");
+console.info(searchParams.toString());  // num=10&page=3
+```
+
+#### 操作地址
+通过修改 location 对象修改浏览器的地址。
+`assign(url)`
+```js
+location.assign("http://www.wrox.com");
+```
+这行代码会立即启动导航到新 URL 的操作， 同时在浏览器历史记录中增加一条记录。
+
+> 如果给 location.href 或 window.location 设置一个 URL，也会以同一个 URL 值调用 assign()方法。
+
+**修改 location 对象的属性也会修改当前加载的页面。其中，hash、search、hostname、pathname 和 port 属性被设置为新值之后都会修改当前 URL**
+```js
+// 假设当前 URL 为 http://www.wrox.com/WileyCDA/
+
+// 把 URL 修改为 http://www.wrox.com/WileyCDA/#section1
+location.hash = "#section1";
+
+// 把 URL 修改为 http://www.wrox.com/WileyCDA/?q=javascript
+location.search = "?q=javascript";
+
+// 把 URL 修改为 http://www.somewhere.com/WileyCDA/ 
+location.hostname = "www.somewhere.com";
+
+// 把 URL 修改为 http://www.somewhere.com/mydir/ 
+location.pathname = "mydir";
+
+// 把 URL 修改为 http://www.somewhere.com:8080/WileyCDA/
+location.port = 8080;
+```
+> 除了 hash 之外，只要修改 location 的一个属性，就会导致页面重新加载新 URL。修改 hash 的值会在浏览器历史中增加一条新记录。
+
+如果不希望增加历史记录，可以使用 replace()方法。
+```js
+location.replace("https://daiwei.site/");
+```
+
+最后一个修改地址的方法是 `reload()`
+- 不传入参数，如果页面自上次请求以来没有修改过，浏览器可能会 从缓存中加载页面。
+- 传入参数 强制从服务器重新加载 `reload(true)`
+  ```js
+  location.reload();
+  location.reload(true);
+  ```
+
+#### navigator 对象
+现在已经成为客户端标识浏览器的标准。只要浏览器启用 JavaScript，navigator 对象就一定存在。
+下表列出了这些接口定义的属性和方法：
+=> 具体见 JavaScript高级程序 375 页
+
+### 检测插件
+检测浏览器是否安装了某个插件是开发中常见的需求。除 IE10 及更低版本外的浏览器，都可以通 过 plugins 数组来确定。
+每个数组包含以下属性
+- `name`: 名称
+- `description`: 介绍
+- `filename`: 文件名
+- `length`: 由当前插件处理的 MIME 类型数量。
+
+### 注册处理程序
+`registerProtocolHandler()` 方法用于注册为某种特定类型信息应用程序
+```js
+navigator.registerProtocolHandler(
+  "mailto",  // 处理的协议（如"mailto"或 "ftp"）、
+  "http://www.somemailclient.com?cmd=%s", // 负责处理请求的 URL，%s 表示原始的请求
+  "Some Mail Client"  // 应用名称
+);
+```
+
+### screen 对象
+这个对 象中保存的纯粹是客户端能力信息，也就是浏览器窗口外面的客户端显示器的信息，比如像素宽度和像 素高度。
+|  属性 | 说明 |
+| ---- | ---- |
+| availHeight | 屏幕像素高度减去系统组件高度（只读）|
+| availLeft | 没有被系统组件占用的屏幕的最左侧像素（只读）|
+| availTop | 没有被系统组件占用的屏幕的最顶端像素（只读）|
+| availWidth | 屏幕像素宽度减去系统组件宽度（只读）|
+| colorDepth | 表示屏幕颜色的位数；多数系统是 32（只读）|
+| height | 屏幕像素高度|
+| left | 当前屏幕左边的像素距离|
+| pixelDepth | 屏幕的位深（只读）|
+| top | 当前屏幕顶端的像素距离 |
+| width | 屏幕像素宽度 |
+| orientation | 返回 Screen Orientation API 中屏幕的朝向 |
+
+### history 对象
+表示当前窗口首次使用以来用户的导航历史记录。
+
+#### 导航 `go()`
+`go()` 方法可以在用户历史记录中沿任何方向导航，可以前进也可以后退。
+这个参数可以是一个整数，**表示前进或后退多少步**。负值表示在历史记录中后退（类似点击浏览器的“后 退”按钮），而正值表示在历史记录中前进（类似点击浏览器的“前进”按钮）。
+
+`go()` 有两个简写方法：`back()`和 `forward()`。顾名思义，这两个方法模拟了浏览器的后退按钮和 前进按钮
+```js
+// 后退一页
+history.back();
+
+// 前进一页
+history.forward();
+```
+
+history 对象还有一个 length 属性，表示历史记录中有多个条目。
+对于窗口或标签页中加载的第一个页面，history.length 等于 1。
+```js
+if (history.length == 1){
+  // 这是用户窗口中的第一个页面
+}
+```
+
+**history 对象通常被用于创建“后退”和“前进”按钮，以及确定页面是不是用户历史记录中的第 一条记录。**
+
+> 对于 2009 年以来发布的主流浏览器，这包括改变 URL 的散列值（因此，把 location.hash 设置为一个新值会在这些浏览器的历史记录中增加一条记录）。这个行为常被单页应用程序框架用来模拟前进和后退，这样做是为了不会因导航而触发页面刷新。
+
+#### 历史状态管理
+`hashchange`  会在页面 URL 的散列变化时被触发，开发者可以在此时执行某些操作。
+`history.pushState()`。这个方法接收 3 个参数：一个 state 对象、一个新状态的标题和一个（可选的）相对 URL。因为 pushState()会创建新的历史记录，所以也会相应地启用“后退”按钮。此时单击“后退” 按钮，就会触发 window 对象上的 `popstate` 事件。
+```js
+let stateObject = {foo:"bar"};
+history.pushState(stateObject, "My title", "baz.html");
+```
+`popstate` 单击后退按钮或调用history.go(), back, forward方法
+
+history.state 获取当前的状态对象(`{foo:"bar"}`)， 也可以使用 replaceState() 并传入与 pushState()同样的前两个参数来更新状态。**更新状态不会创建新历史记录，只会覆盖当前状态**：
+```js
+history.replaceState({newFoo: "newBar"}, "New title");
+history.state; // {newFoo: "newBar"}
+```
+
+> 调用history.pushState()或者history.replaceState()不会触发popstate事件. popstate事件只会在浏览器某些行为下触发, 比如点击后退、前进按钮(或者在JavaScript中调用history.back()、history.forward()、history.go()方法)，此外，a 标签的锚点也会触发该事件.
+
+> 要确保通过 pushState()创建的每个“假”URL 背后都对应着服务器上一个真实的物理 URL。否则，单击“刷新”按钮会导致 404 错误。所有单页应用程序（SPA，Single Page Application）框架都必须通过服务器或客户端的某些配置解决这个问题。nginx 转发 try file 所有路由都执行index.html

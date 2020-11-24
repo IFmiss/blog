@@ -1,5 +1,5 @@
 ---
-title: 【js高级程序】ServiceWorker
+title: 【js高级程序】工作者线程-ServiceWorker
 date: 2020-11-10 08:08:54
 categories: javascript
 tags: [js]
@@ -311,3 +311,4 @@ self.onfetch = (fetchEvent) => {
 ```
 
 #### 推送通知
+
