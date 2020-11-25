@@ -127,3 +127,71 @@ console.info(screen.orientation)
 console.info(screen.orientation)  // undefind
 ```
 
+#### 浏览器元数据
+navigator 对象暴露出一些 API，可以提供浏览器和操作系统的状态信息。
+
+##### Geolocation API
+浏览器脚本感知当前设备的地理位 置。这个 API 只在安全执行环境(通过 HTTPS 获取的脚本)中可用。
+
+```js
+navigator.geolocation.getCurrentPosition((position) => console.info(position));
+
+// 如果同意返回如下信息
+// {
+//   coords: {
+//     accuracy: 55 
+//     altitude: null
+//     altitudeAccuracy: null
+//     heading: null 
+//     latitude: 31.273845500000004
+//     longitude: 121.471465
+//     speed: null
+//   },
+//   timestamp: 1606297728920
+// }
+```
+- `coords`
+  - `accuracy` 以米为单位的精度(纬度相关)
+  - `altitude` 海拔高度 (精度值:米) 设备必须具备相应的能力(比 如 高度计),否则为null
+  - `altitudeAccuracy`  海拔精度(米)
+  - `heading`  表示相对于正北方向移动的角度(0 ≤ heading < 360)
+  - `latitude`  纬度
+  - `longitude`  经度
+  - `speed`  表示设备每秒移动的速度
+- `timestamp`  表示查询时间的时间戳
+
+`getCurrentPosition` 第二个参数是error 错误的回调函数，参数e是一个对象，包含一下参数
+- `code` 属性是一个整数,表示以下 3 种错误
+  - `PERMISSION_DENIED` 地理位置信息的获取失败，因为该页面没有获取地理位置信息的权限。
+  - `POSITION_UNAVAILABLE` 地理位置获取失败，因为至少有一个内部位置源返回一个内部错误。
+  - `TIMEOUT` 获取地理位置超时，通过定义 `PositionOptions.timeout` 来设置获取地理位置的超时时长。
+- `message` string
+
+`getCurrentPosition` 第三个参数 `PositionOptions`对象，可设置如下属性
+- `enableHighAccuracy` true 表示返回的值应该尽量精确，默认值为 false。
+- `timeout` 毫秒 表示在以 TIMEOUT 状态调用错误回调函数之前等待的最长时间
+- `maximumAge` 毫秒 表示返回坐标的最长有效期，默认值为 0。0 表示强 制系统忽略缓存的值，每次都重新查询。
+
+##### Connection State 和 NetworkInformation API
+1. Connection State: online & offline
+```js
+const connectionStateChange = () => console.log(navigator.onLine);
+
+// 网络连接时触发
+window.addEventListener('online', connectionStateChange);
+
+// 网络断开时触发
+window.addEventListener('offline', connectionStateChange);
+```
+
+2. NetworkInformation API
+navigator 对象还暴露了 NetworkInformation API，可以通过 navigator.connection 属性使用
+```js
+navigator.connection  // NetworkInformation {onchange: null, effectiveType: "4g", rtt: 100, downlink: 10, saveData: false}
+```
+以下是 NetworkInformation API 暴露的属性。
+- `downlink` 整数，表示当前设备的带宽(以 Mbit/s 为单位)，舍入到最接近的 25kbit/s。这个值可能会根据历史网络吞吐量计算，也可能根据连接技术的能力来计算。
+- `downlinkMax` 整数，表示当前设备最大的下行带宽(以 Mbit/s 为单位)，根据网络的第一跳来确定。因为第一跳不一定反映端到端的网络速度，所以这个值只能用作粗略的上限值。
+<!-- -  -->
+
+
