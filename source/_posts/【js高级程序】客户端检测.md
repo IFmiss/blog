@@ -192,6 +192,51 @@ navigator.connection  // NetworkInformation {onchange: null, effectiveType: "4g
 以下是 NetworkInformation API 暴露的属性。
 - `downlink` 整数，表示当前设备的带宽(以 Mbit/s 为单位)，舍入到最接近的 25kbit/s。这个值可能会根据历史网络吞吐量计算，也可能根据连接技术的能力来计算。
 - `downlinkMax` 整数，表示当前设备最大的下行带宽(以 Mbit/s 为单位)，根据网络的第一跳来确定。因为第一跳不一定反映端到端的网络速度，所以这个值只能用作粗略的上限值。
-<!-- -  -->
+- `effectiveType` 字符串枚举值，表示连接速度和质量。`slow-2g` | `2g` | `3g` | `4g`
+- `rtt` 表示当前网络实际的往返时间，舍入为最接近的 25 毫秒。
+- `type` 字符串枚举值，表示网络连接技术。这个值可能为下列值之一。
+  - `bluetooth` 蓝牙
+  - `cellular` 蜂窝
+  - `ethernet` 以太网
+  - `none` 无网络连接。相当于 navigator.onLine === false。
+  - `mixed` 多种网络混合。
+  - `wifi` wifi状态
+  - ...
+- `saveData` 表示用户设备是否启用了“节流”(reduced data)模式。
+- `onchange` 会在任何连接状态变化时激发一个 change 事件。
+  ```js
+    navigator.connection.addEventListener('change',changeHandler)
+  ```
 
+3. Battery Status API
+```js
+(async() => {
+  const res = await navigator.getBattery();
+  alert(JSON.stringify(res))    //  BatteryManager 对象。
+})()
+```
+BatteryManager 包含 4 个只读属性，提供了设备电池的相关信息
+- `charging` 布尔值，表示设备当前是否正接入电源充电。如果设备没有电池，则返回 true。
+- `chargingTime` 整数，表示预计离电池充满还有多少秒。
+- `dischargingTime` 整数，表示预计离电量耗尽还有多少秒。
+- `level` 浮点数，表示电量百分比。电量完全耗尽返回 0.0，电池充满返回 1.0。如果设备没有电
+池，则返回 1.0。
+
+这个 API 还提供了 4 个事件属性，可用于设置在相应的电池事件发生时调用的回调函数。
+- `onchargingchange`  充电状态变化时的处理程序
+- `onchargingtimechange`  充电时间变化时的处理程序
+- `ondischargingtimechange`   放电时间变化时的处理程序
+- `onlevelchange`   电量百分比变化时的处理程序
+
+#### 硬件
+1. 处理器核心数  `navigator.hardwareConcurrency`
+返回浏览器支持的逻辑处理器核心数量，包含表示核心
+数的一个整数值(如果核心数无法确定，这个值就是 1)。关键在于，这个值表示浏览器可以并行执行的 最大工作线程数量，不一定是实际的 CPU 核心数。
+
+2. 设备内存大小 `navigator.deviceMemory`
+返回设备大致的系统内存大小，包含单位为 GB 的浮点数(舍入
+为最接近的 2 的幂:512MB 返回 0.5，4GB 返回 4)。
+
+3. 最大触点数  `navigator.maxTouchPoints`
+返回触摸屏支持的最大关联触点数量，包含一个整数值。
 
