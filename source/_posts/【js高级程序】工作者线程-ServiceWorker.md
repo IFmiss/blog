@@ -311,4 +311,4 @@ self.onfetch = (fetchEvent) => {
 ```
 
 #### 推送通知
-
+目前国内不支持FCM
