@@ -168,4 +168,111 @@ console.log(matches[2]); // " and baby"
 第二个元素是匹配第一个捕获组的字符串
 第三个元素是匹配第二个捕获组的字符串
 
+> - 如果模式设置了全局标记，则每次调用 exec()方法会返回一个匹配的信息。
+> - 如果没有设置全局标 记，则无论对同一个字符串调用多少次 exec()，也只会返回第一个匹配的信息。
 
+2. **test()**
+接收一个字符串参数。如果输入的文本与模式匹配，则参数 返回 true，否则返回 false。
+
+> 正则表达式的 valueOf()方法返回正则表达式本身。
+
+#### RegExp 构造函数属性
+RegExp 构造函数本身也有几个属性。（在其他语言中，这种属性被称为静态属性。）这些属性适用 于作用域中的所有正则表达式，而且会根据最后执行的正则表达式操作而变化。
+
+```js
+let text = "this has been a short summer";
+let pattern = /(.)hort/g;
+
+if (pattern.test(text)) {
+  console.log(RegExp.input); // this has been a short summer
+  console.log(RegExp.leftContext); // this has been a
+  console.log(RegExp.rightContext); // summer 
+  console.log(RegExp.lastMatch); // short 
+  console.log(RegExp.lastParen); // s
+}
+```
+- input 属性中包含原始的字符串。
+- leftConext 属性包含原始字符串中"short"之前的内容
+- rightContext 属性包含"short" 之后的内容。
+- lastMatch 属性包含匹配整个正则表达式的上一个字符串，即"short"。
+- lastParen 属性包含捕获组的上一次匹配，即"s"。
+
+### 原始值包装类型
+为了方便操作原始值，ECMAScript 提供了 3 种特殊的引用类型：Boolean、Number 和 String。
+```js
+let s1 = "some text";
+let s2 = s1.substring(2);
+```
+具体来说，当第二行访问 s1 时，是以读模式访问的，也就是要从内存中读取变量保存的值。在以读模式访问字符串 值的任何时候，后台都会执行以下 3 步：
+- 创建一个 String 类型的实例；
+- 调用实例上的特定方法；
+- 销毁实例。
+
+可以把这 3 步想象成执行了如下 3 行 ECMAScript 代码：
+```js
+let s1 = new String("some text");
+let s2 = s1.substring(2);
+s1 = null;
+```
+
+Object 构造函数作为一个工厂方法，能够根据传入值的类型返回相应原始值包装类型的实例。
+```js
+let obj = new Object("some text");
+console.log(obj instanceof String);   // true
+```
+如果传给 Object 的是字符串，则会创建一个 String 的实例。如果是数值，则会创建 Number 的 实例。布尔值则会得到 Boolean 的实例。
+
+#### Boolean
+Boolean 是对应布尔值的引用类型。要创建一个 Boolean 对象，就使用 Boolean 构造函数并传入 true 或 false。
+```js
+let booleanObject = new Boolean(true);
+```
+Boolean 的实例会重写 valueOf()方法，返回一个原始值 true 或 false。toString()方法被调 用时也会被覆盖，返回字符串"true"或"false"。
+
+#### Number
+Number 是对应数值的引用类型。要创建一个 Number 对象，就使用 Number 构造函数并传入一个 数值。
+
+```js
+let numberObject = new Number(10);
+```
+Number 类型重写了 valueOf()、toLocaleString()和 toString()方 法。
+- valueOf()方法返回 Number 对象表示的原始数值，另外两个方法返回数值字符串。
+- toString() 方法可选地接收一个表示基数的参数，并返回相应基数形式的数值字符串
+
+除了继承的方法，Number 类型还提供了几个用于将数值格式化为字符串的方法。
+- `toFixed()` 方法返回包含指定小数点位数的数值字符串 (四舍五入截断， 不够补0)
+- `toExponential()` 返回数字的科学计数法，表示结果中小数的位数
+  ```js
+  let num = 10;
+  console.log(num.toExponential());   // "1e+1"
+  console.log(num.toExponential(1));  // "1.0e+1"
+  let num = 100;
+  console.log(num.toExponential(2));   // "1.00e+2"
+  ```
+  一般来说，这么小的数不用表示为科学记数法形式。如果想得到数 值最适当的形式，那么可以使用 `toPrecision()`。
+- `toPrecision()` 方法会根据情况返回最合理的输出结果，可能是固定长度，也可能是科学记数法形式。
+  ```js
+  let num = 99;
+  console.log(num.toPrecision(1)); // "1e+2"
+  console.log(num.toPrecision(2)); // "99"
+  console.log(num.toPrecision(3)); // "99.0"
+  ```
+  本质上，toPrecision()方法会 根据数值和精度来决定调用 toFixed()还是 toExponential()。为了以正确的小数位精确表示数值， 这 3 个方法都会向上或向下舍入。
+
+##### isInteger()方法
+ES6 新增了 Number.isInteger()方法，用于辨别一个数值是否保存为整数。
+```js
+Number.isInteger(1)   // true
+Number.isInteger(1.00)    // true
+Number.isInteger(1.01)    // false
+```
+
+##### isSafeInteger()判断是否是安全整数
+范围从 **Number.MIN_SAFE_INTEGER（2 ** 53 + 1）** 到 **Number.MAX_SAFE_INTEGER（2 ** 53 - 1）**。
+```js
+console.log(Number.isSafeInteger(-1 * (2 ** 53)));    // false
+console.log(Number.isSafeInteger(-1 * (2 ** 53) + 1));  // true
+
+console.log(Number.isSafeInteger(2 ** 53));   // false
+console.log(Number.isSafeInteger((2 ** 53) - 1));   // true
+```
