@@ -276,3 +276,100 @@ console.log(Number.isSafeInteger(-1 * (2 ** 53) + 1));  // true
 console.log(Number.isSafeInteger(2 ** 53));   // false
 console.log(Number.isSafeInteger((2 ** 53) - 1));   // true
 ```
+
+#### String
+String 是对应字符串的引用类型。3 个继承的方法 valueOf()、toLocaleString() 和 toString()都返回对象的原始字符串值。
+
+1. JavaScript 字符
+JavaScript 字符串由 16 位码元（code unit）组成。字符串的 length 属性表示字符串包含多少 16 位码元
+
+`charAt()` 返回给定索引位置的字符
+```js
+let message = "abcde";
+console.log(message.charAt(2)); // "c"
+```
+
+`charCodeAt()` 返回指定码元的字符编码
+```js
+let message = "abcde";
+console.log(message.charCodeAt(2)); // 99
+
+// 十进制 99 等于十六进制 63
+console.log(99 === 0x63);   // true
+```
+
+`fromCharCode()` 用于根据给定的 UTF-16 码元创建字符串中的字符。
+```js
+console.log(String.fromCharCode(0x61, 0x62, 0x63, 0x64, 0x65));   // abcde
+
+// 0x0061 === 97
+// 0x0062 === 98
+// 0x0063 === 99
+// 0x0064 === 100
+// 0x0065 === 101
+
+console.log(String.fromCharCode(97, 98, 99, 100, 101));   // "abcde"
+```
+
+##### 字符串包含方法
+`startsWith(str, startPosition)`: 检查开始于索引 0 的匹配项, startPosition可以手动控制匹配位置
+
+`endsWith(str, endPosition)`: 检查开始于索引 (string.length - substring.length) 的匹配项 endPosition可以手动控制匹配位置
+```js
+let message = "foobarbaz";
+console.log(message.startsWith("foo")); // true 
+console.log(message.startsWith("bar")); // false
+
+console.log(message.endsWith("baz"));  // true
+console.log(message.endsWith("bar"));  // false
+```
+接受第二个参数
+```js
+let message = "foobarbaz";
+
+console.log(message.startsWith("foo")); // true
+console.log(message.startsWith("foo", 1)); // false
+
+console.log(message.endsWith("bar"));   // false 
+console.log(message.endsWith("bar", 6));    // true
+```
+
+##### 字符串迭代与解构
+字符串的原型上暴露了一个@@iterator 方法，表示可以迭代字符串的每个字符。
+```js
+let message = 'abc';
+let stringIterator = message[Symbol.iterator]();
+
+console.log(stringIterator.next());  // {value: "a", done: false} 
+console.log(stringIterator.next());  // {value: "b", done: false} 
+console.log(stringIterator.next());  // {value: "c", done: false} 
+console.log(stringIterator.next());  // {value: undefined, done: true} 
+```
+> for of 基于迭代器实现数据遍历
+
+##### localeCompare()
+比较两个字符串
+
+**a.localeCompare(b)**
+- `1` b 按字母表顺序排在 a前面
+- `0` 相等
+- `-1` b排在a后面
+
+### 单例内置对象
+#### Global
+1. URL 编码方法
+`encodeURI()`
+`encodeURIComponent()`
+用于编码统一资源标识符（URI），以便传给浏览器。 有效的 URI 不能包含某些字符，比如空格。使用 URI 编码方法来编码 URI 可以让浏览器能够理解它们， 同时又以特殊的 UTF-8 编码替换掉所有无效字符。
+
+- `encodeURI()`不会编码属于 URL 组件的特殊字符，比如冒号、斜杠、问号、 井号
+- `encodeURIComponent()` 会编码它发现的所有非标准字符
+```js
+let uri = "https://www.daiwei.site/blog/2?user=戴维";
+
+encodeURI(uri);
+// "https://www.daiwei.site/blog/2?user=%E6%88%B4%E7%BB%B4"
+
+encodeURIComponent(uri);
+// https%3A%2F%2Fwww.daiwei.site%2Fblog%2F2%3Fuser%3D%E6%88%B4%E7%BB%B4
+```
