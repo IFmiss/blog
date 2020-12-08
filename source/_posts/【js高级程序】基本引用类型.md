@@ -373,3 +373,34 @@ encodeURI(uri);
 encodeURIComponent(uri);
 // https%3A%2F%2Fwww.daiwei.site%2Fblog%2F2%3Fuser%3D%E6%88%B4%E7%BB%B4
 ```
+
+2. eval()方法
+这个方法就是一个完 整的 ECMAScript 解释器，它接收一个参数，即一个要执行的 ECMAScript（JavaScript）字符串。
+
+3. Global 对象属性
+像 undefined、NaN 和 Infinity 等特殊 值都是 Global 对象的属性。此外，所有原生引用类型构造函数，比如 Object 和 Function，也都是 Global 对象的属性。
+
+4. window 对象
+浏览器将 window 对象实现为 Global 对象的代理。因此，所有全局作用域中声明的变量和函数都变成了 window 的属性。
+
+#### Math
+ECMAScript 提供了 Math 对象作为保存数学公式、信息和计算的地方。
+
+> Math 对象上提供的计算要比直接在 JavaScript 实现的快得多，因为 Math 对象上的计算使用了 JavaScript 引擎中更高效的实现和处理器指令。但使用 Math 计算的问题是精度会因浏览器、操作系统、指令集和硬件而异。
+
+### 小结
+JavaScript 中的对象称为引用值，几种内置的引用类型可用于创建特定类型的对象。
+- 引用值与传统面向对象编程语言中的类相似，但实现不同。
+- Date 类型提供关于日期和时间的信息，包括当前日期、时间及相关计算。
+- RegExp 类型是 ECMAScript 支持正则表达式的接口，提供了大多数基础的和部分高级的正则表 达式功能。
+
+JavaScript 比较独特的一点是，函数实际上是 Function 类型的实例，也就是说函数也是对象。因 为函数也是对象，所以函数也有方法，可以用于增强其能力。
+
+由于原始值包装类型的存在，JavaScript 中的原始值可以被当成对象来使用。有 3 种原始值包装类 型：**Boolean、Number 和 String**。它们都具备如下特点。
+- 每种包装类型都映射到同名的原始类型。
+- 以读模式访问原始值时，**后台会实例化一个原始值包装类型的对象，借助这个对象可以操作相应的数据**。
+- 涉及原始值的语句执行完毕后，包装对象就会被销毁。
+
+全局上下文中会存在两个内置对象：Global 和 Math。
+其中，Global 对象在 大多数 ECMAScript 实现中无法直接访问。不过，浏览器将其实现为 window 对象。所有全局变量和函 数都是 Global 对象的属性。Math 对象包含辅助完成复杂计算的属性和方法。
+
