@@ -30,8 +30,6 @@ Object 是 ECMAScript 中最常用的类 型之一。虽然 Object 的实例没�
 > 如果出现在语句上下文（statement context）中，比如 if 语句的条件后面，则**表示一个语句块的开始。**
 
 ### Array
-ECMAScript 数组也是一组有序的数据，但跟其他语言 不同的是，数组中每个槽位可以存储任意类型的数据。这意味着可以创建一个数组，它的第一个元素 是字符串，第二个元素是数值，第三个是对象。ECMAScript 数组也是动态大小的，会随着数据添加而 自动增长。
-
 #### 创建数组
 - new Array
   ```js
@@ -57,4 +55,134 @@ Array 构造函数还有两个 ES6 新增的用于创建数组的静态方法：
     console.info(a1);   // [1, 2, 3, 4]
     console.info(a2);   // [1, 2, 3, 4, 5]
   ```
-- `of()` 用于将一组参数转换为数组实例。
+- `of()` 用于将一组参数转换为数组实例。用于替代在 ES6 之前常用的 Array.prototype. slice.call(arguments)
+  ```js
+    console.log(Array.of(1, 2, 3, 4)); // [1, 2, 3, 4]
+  ```
+
+#### 数组空位
+使用数组字面量初始化数组时，可以使用一串逗号来创建空位（hole）。
+```js
+const options = [,,,,,]; // 创建包含 5 个元素的数组
+```
+> 由于行为不一致和存在性能隐患，因此实践中要避免使用数组空位。如果确实需要空位，则可以显式地用 undefined 值代替。
+
+#### 检测数组
+- `value instanceof Array`
+- `Array.isArray()`
+
+#### 迭代器方法
+- `keys()`  返回数组索引的迭代器
+- `values()`  返回数组元素的迭代器
+- `entries()`   返回 索引/值对的迭代器
+```js
+const a = ["foo", "bar", "baz", "qux"];
+
+// 因为这些方法都返回迭代器，所以可以将它们的内容
+// 通过 Array.from()直接转换为数组实例
+const aKeys = Array.from(a.keys());
+const aKeys = Array.from(a.values());
+const aKeys = Array.from(a.entries());
+```
+
+```js
+const a = ["foo", "bar", "baz", "qux"];
+
+// 解构
+for (const [idx, element] of a.entries()) {
+  alert(idx);
+  alert(element);
+}
+```
+
+#### 复制和填充方法
+##### `fill(v, start, end)` 
+fill()方法可以向一个已有的数组中插入全部或部分相同的值。
+  - start 开始索引用于指定开始填充的位置，它是可选的。如果不提供结束索引，则一直填充到数组末尾。
+  - 负值索引从数组末尾开始计算。**也可以将负索引想象成数组长度加上它得到的一个正索引**
+```js
+const zeroes = [0, 0, 0, 0, 0];
+// 用 5 填充整个数组
+zeroes.fill(5);   // [5, 5, 5, 5, 5]
+zoroes.fill(0);   // [0, 0, 0, 0, 0]
+
+// 用 6 填充索引大于等于 3 的元素
+zeroes.fill(6, 3);  // [0, 0, 0, 6, 6]
+zoroes.fill(0);
+
+// 用 7 填充索引大于等于 1 且小于 3 的元素
+zeroes.fill(7, 1, 3);  // [0, 7, 7, 0, 0]
+zoroes.fill(0);
+
+// 用 8 填充索引大于等于 1 且小于 4 的元素 
+// (-4 + zeroes.length = 1)
+// (-1 + zeroes.length = 4)
+zeroes.fill(8, -4, -1);
+zeroes.fill(8, -4 + 5, -1 + 5);
+// 这两个执行结果一致
+```
+
+该方法 `start`, `end` 如下方法传递会被忽略
+- 索引过低(即使add length 也达不到正数)
+  ```js
+  zeroes.fill(1, -10, -6);
+  console.log(zeroes);  // [0, 0, 0, 0, 0]
+  ```
+- 索引过高
+  ```js
+  zeroes.fill(1, 10, 15);
+  console.log(zeroes);  // [0, 0, 0, 0, 0]
+  ```
+- 索引反向 (index 相反了)
+  ```js
+  zeroes.fill(2, 4, 2);
+  console.log(zeroes);  // [0, 0, 0, 0, 0]
+  ```
+- 索引部分可用，填充可用部分 
+  ```js
+  zeroes.fill(4, 3, 10);
+  console.log(zeroes);  // [0, 0, 0, 4, 4]
+  ```
+
+##### `copyWithin()`
+copyWithin()会按照指定范围浅复制数组中的部分内容，然后将它们插入到指 定索引开始的位置。开始索引和结束索引则与 fill()使用同样的计算方法
+```js
+let ints,
+reset = () => ints = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]; reset();
+
+// 从 ints 中复制索引 0 开始的内容，插入到索引 5 开始的位置
+// 在源索引或目标索引到达数组边界时停止
+ints.copyWithin(5);
+console.log(ints); // [0, 1, 2, 3, 4, 0, 1, 2, 3, 4] 
+reset();
+
+ints.copyWithin(4);
+console.log(ints); // [0, 1, 2, 3, 0, 1, 2, 3, 4, 5] 
+reset();
+
+// 从 ints 中复制索引 5 开始的内容，插入到索引 0 开始的位置
+ints.copyWithin(0, 5);
+console.log(ints); // [5, 6, 7, 8, 9, 5, 6, 7, 8, 9]
+reset();
+
+// 从0 开始到3（不包含3）结束的内容
+// 插入到索引4开始
+ints.copyWithin(4, 0, 3);
+console.log(ints); // [0, 1, 2, 3, 0, 1, 2, 7, 8, 9]
+reset();
+
+// 支持负索引值，与 fill()相对于数组末尾计算正向索引的过程是一样的
+// ints.copyWithin(-4, -7, -3);
+ints.copyWithin(6, 3, 7);
+console.log(ints); // [0, 1, 2, 3, 4, 5, 3, 4, 5, 6]
+reset();
+```
+该方法 `start`, `end` 如下方法传递会被忽略
+- 索引过低，忽略
+- 索引过高，忽略
+- 索引反向，忽略
+- 索引部分可用，复制、填充可用部分
+
+#### 转换方法
+- `valueOf()` 返回的还是数组本身
+- `toString()` 返回由数组中每个值的等效字符串拼接而成的一个逗号分隔的 字符串。
