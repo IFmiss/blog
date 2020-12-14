@@ -235,5 +235,126 @@ alert(buf.byteLength);    // 16
 -----   占坑  ------
 
 ### Map
+作为 ECMAScript 6 的新增特性，Map 是一种新的集合类型，为这门语言带来了真正的键/值存储机制。
+```js
+const m = new Map();
+```
+```js
+const m1 = new Map([
+  ["key1", "val1"],
+  ["key2", "val2"],
+  ["key3", "val3"]
+]);
 
+m1.size;  // 3
 
+// 使用自定义迭代器初始化
+const m2 = new Map({
+  [Symbol.iterator]: function * () {
+    yield ["key1", "val1"],
+    yield ["key2", "val2"],
+    yield ["key3", "val3"],
+  }
+})
+m2.size;  // 3
+
+m2.get('key1'); // val1
+m1.has('key2'); // true
+```
+
+- `has` 是否存在对应属性值
+- `set` 设置健值对，返回映射实例，因此支持链式调用
+- `get` 获取当前属性的对应值
+- `delete` 删除一个键值对
+- `clear`  清除这个映射实例中的所有键值对
+
+#### 顺序与迭代
+与 Object 类型的一个主要差异是，**Map 实例会维护键值对的插入顺序**，因此可以根据插入顺序执行迭代操作。
+
+entries()方法（或者 Symbol.iterator 属性，它引用 entries()）取得这个迭代器
+```js
+const m = new Map([
+  ["key1", "val1"],
+  ["key2", "val2"],
+  ["key3", "val3"]
+]);
+
+alert(m.entries === m[Symbol.iterator]); // true
+
+for (let p of m.entries()) {
+  console.info(p);
+}
+for (let p of m[Symbol.iterator]()) {
+  console.info(p);
+}
+
+// 一致的结果
+// [key1,val1]
+// [key2,val2]
+// [key3,val3]
+```
+
+如果不使用迭代器，而是使用回调方式，则可以调用映射的 forEach(callback, opt_thisArg) 方法并传入回调，依次迭代每个键/值对。
+```js
+m.forEach((val, key) => alert(`${key} -> ${val}`));
+// key1 -> val1
+// key2 -> val2
+// key3 -> val3
+```
+
+#### 选择 Object 还是 Map
+**内存占用**: 不同浏览器的情况不同，但给定固定大小的内存，Map 大约可以比 Object 多存储 50%的键/值对
+**插入性能**: 向 Object 和 Map 中插入新键/值对的消耗大致相当，不过插入 Map 在所有浏览器中一般会稍微快 一点儿。
+**查找速度**: 与插入不同，从大型 Object 和 Map 中查找键/值对的性能差异极小，但如果只包含少量键/值对， 则 Object 有时候速度更快。
+**删除性能**: 对大多数浏览器引擎来说，Map 的 delete()操作都比插入和查找更快。 如果代码涉及大量删除操作，那么毫无疑问应该选择 Map。
+
+### WeakMap
+ECMAScript 6 新增的“弱映射”（WeakMap）是一种新的集合类型，为这门语言带来了增强的键/ 值对存储机制。
+
+WeakMap 中的“weak”（弱），描述的是 JavaScript 垃圾回收程序对待“弱映射”中键的方式。
+```js
+const key1 = {id: 1},
+  key2 = {id: 2},
+  key3 = {id: 3}
+// 使用嵌套数组初始化弱映射
+const wm1 = new WeakMap([
+  [key1, "val1"],
+  [key2, "val2"],
+  [key3, "val3"]
+]);
+
+// 初始化是全有或全无的操作 
+// 只要有一个键无效就会抛出错误，导致整个初始化失败
+const wm2 = new WeakMap([
+  [key1, "val1"],
+  ["BADKEY", "val2"],
+  [key3, "val3"]
+]);
+// TypeError: Invalid value used as WeakMap key
+typeof wm2;
+// ReferenceError: wm2 is not defined
+```
+初始化之后可以使用 set()再添加键/值对，可以使用 get()和 has()查询，还可以使用 delete() 删除
+
+#### 弱键
+WeakMap 中“weak”表示弱映射的键是“弱弱地拿着”的。意思就是，这些键不属于正式的引用，不会阻止垃圾回收。但要注意的是，弱映射中值的引用可**不是**“弱弱地拿着”的。只要键存在，键/值 对就会存在于映射中，并被当作对值的引用，因此就不会被当作垃圾回收。
+```js
+const wm = new WeakMap();
+
+const container = {
+  key: {}
+};
+wm.set(container.key, "val");
+wm.get(container.key);  // val
+function removeReference() {
+  container.key = null;
+}
+removeReference();
+wm.get(container.key);  // undefined
+```
+如果调用了 removeReference()，就会摧毁键对象的最后一个引用，垃圾回收程序就可以 把这个键/值对清理掉。
+
+#### 不可迭代键
+因为 WeakMap 中的键/值对任何时候都可能被销毁，所以没必要提供迭代其键/值对的能力。
+
+### Set
