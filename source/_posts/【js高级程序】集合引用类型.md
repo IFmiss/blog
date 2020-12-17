@@ -358,3 +358,106 @@ wm.get(container.key);  // undefined
 因为 WeakMap 中的键/值对任何时候都可能被销毁，所以没必要提供迭代其键/值对的能力。
 
 ### Set
+ECMAScript 6 新增的 Set 是一种新集合类型，为这门语言带来集合数据结构。Set 在很多方面都 像是加强的 Map，这是因为它们的大多数 API 和行为都是共有的。
+```js
+const s1 = new Set(["val1", "val2", "val3"]);
+alert(s1.size);
+
+// 使用自定义迭代器初始化集合
+const s2 = new Set({
+  [Symbol.iterator]: function*() {
+    yield "val1";
+    yield "val2";
+    yield "val3";
+  }
+});
+alert(s2.size); // 3
+```
+集合也使用 SameValueZero 操作（ECMAScript 内部定义，无法在语言中使用），基本上相当于使用严格对象相等的标准来检查值的匹配性。
+```js
+const s = new Set();
+
+const functionVal = function() {};
+const symbolVal = Symbol();
+const objectVal = new Object();
+
+s.add(functionVal);
+s.add(symbolVal);
+s.add(objectVal);
+
+console.info(s.has(functionVal))  // true
+console.info(s.has(symbolVal))  // true
+console.info(s.has(objectVal))  // true
+
+// SameValueZero 检查意味着独立的实例不会冲突
+alert(s.has(function() {})); // false
+```
+
+add()和 delete()操作是幂等的。delete()返回一个布尔值，表示集合中是否存在要删除的值
+```js
+const s = new Set();
+
+s.add('foo');
+s.size;   // 1
+s.add('foo');
+s.size;   // 1
+
+s.delete('foo');    // true
+s.delete('foo');    // false
+```
+
+#### 顺序与迭代
+Set 会维护值插入时的顺序，因此支持按顺序迭代。
+
+可以通过 values()方 法及其别名方法 keys()（或者 Symbol.iterator 属性，它引用 values()）取得这个迭代器
+```js
+const s = new Set(["val1", "val2", "val3"]);
+s.values == s[Symbol.iterator]
+s.keys == s[Symbol.iterator]
+```
+因为 values()是默认迭代器，所以可以直接对集合实例使用扩展操作，把集合转换为数组：
+```js
+const s = new Set(["val1", "val2", "val3"]);
+console.log([...s]); // ["val1", "val2", "val3"]
+```
+
+### WeakSet
+WeakSet 中的“weak”（弱），描述的是 JavaScript 垃圾回收程序对待“弱集合”中值的方式。
+```js
+const ws = new WeakSet();
+
+const val1 = {id: 1},
+  val2 = {id: 2},
+  val3 = {id: 3}
+const ws1 = new WeakSet([val1, val2, val3]);
+
+// 初始化是全有或全无的操作
+// 只要有一个值无效就会抛出错误，导致整个初始化失败
+const ws2 = new WeakSet([val1, "BADVAL", val3]);
+// TypeError: Invalid value used in WeakSet
+typeof ws2;
+// ReferenceError: ws2 is not defined
+```
+初始化之后可以使用 add()再添加新值，可以使用 has()查询，还可以使用 delete()删除
+
+### 小结
+JavaScript 中的对象是引用值，可以通过几种内置引用类型创建特定类型的对象。
+
+- 引用类型与传统面向对象编程语言中的类相似，但实现不同。
+- Object 类型是一个基础类型，所有引用类型都从它继承了基本的行为。
+- Array 类型表示一组有序的值，并提供了操作和转换值的能力。
+- 定型数组包含一套不同的引用类型，用于管理数值在内存中的类型。
+- Date 类型提供了关于日期和时间的信息，包括当前日期和时间以及计算。
+- RegExp 类型是 ECMAScript 支持的正则表达式的接口，提供了大多数基本正则表达式以及一些 高级正则表达式的能力。
+
+JavaScript 比较独特的一点是，函数其实是 Function 类型的实例，这意味着函数也是对象。由于 函数是对象，因此也就具有能够增强自身行为的方法。
+
+因为原始值包装类型的存在，所以 JavaScript 中的原始值可以拥有类似对象的行为。有 3 种原始值 包装类型：Boolean、Number 和 String。它们都具有如下特点。
+- 每种包装类型都映射到同名的原始类型。
+- 在以读模式访问原始值时，后台会实例化一个原始值包装对象，通过这个对象可以操作数据。
+- 涉及原始值的语句只要一执行完毕，包装对象就会立即销毁。
+
+JavaScript 还有两个在一开始执行代码时就存在的内置对象：Global 和 Math。
+
+ECMAScript 6 新增了一批引用类型：Map、WeakMap、Set 和 WeakSet。这些类型为组织应用程序 数据和简化内存管理提供了新能力。
+

@@ -1,10 +1,19 @@
-hexo 博客 
-该文件是编辑hexo文章的环境
-public生成的文章存放于[ifmiss.github.io](https://github.com/IFmiss/ifmiss.github.io)
+### 博客地址 www.daiwei.site/blog
 
-博客使用的是[NEXT](https://github.com/theme-next/hexo-theme-next)的主题
+#### js高级程序设计学习
+[【js高级程序】变量、作用域与内存](https://daiwei.site/blog/detail?id=58)
+[【js高级程序】BOM](https://daiwei.site/blog/detail?id=57)
+[【js高级程序】DOM扩展](https://daiwei.site/blog/detail?id=56)
+[【js高级程序】DOM](https://daiwei.site/blog/detail?id=55)
+[【js高级程序】工作者线程-ServiceWorker](https://daiwei.site/blog/detail?id=59)
+[【js高级程序】工作者线程-SharedWorker](https://daiwei.site/blog/detail?id=52)
 
-我自己基于这个主题修改的小部分样式，如果用这个地址可以见[hexo-theme-next](https://github.com/IFmiss/hexo-theme-next.git)
+#### web安全
+[web安全-SQL注入](https://daiwei.site/blog/detail?id=46)
+[web安全-点击劫持](https://daiwei.site/blog/detail?id=45)
+[web安全-CSRF](https://daiwei.site/blog/detail?id=44)
+[web安全-XSS](https://daiwei.site/blog/detail?id=43)
+[Content-Security-Policy](https://daiwei.site/blog/detail?id=42)
 
-
-#### 地址 www.daiwei.site/blog
+#### webpack
+[webpack配置-splitChunks](https://daiwei.site/blog/detail?id=39)
