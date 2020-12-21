@@ -213,4 +213,126 @@ let foo = {
 ```
 > 箭头函数不能用来定义生成器函数。
 
+- 调用生成器函数会产生一个**生成器对象**。生成器对象一开始处于暂停执行（suspended）的状态。与迭代器相似，生成器对象也实现了 `Iterator` 接口，因此具有 next()方法。调用这个方法会让生成器 开始或恢复执行。
+  ```js
+  function *generatorFn() {
+    console.info('this is g Fn')
+  }
+
+  console.log(generatorFn);  // generatorFn 
+  console.log(generatorFn().next()); // 打印'this is g Fn'   // 返回{done: true, value: undefined};
+  ```
+- next()方法的返回值类似于迭代器，有一个 done 属性和一个 value 属性。
+
+- value 属性是生成器函数的返回值，默认值为 undefined
+  ```js
+  function *generatorFn() {
+    return 'hello world';
+  }
+
+  generatorFn().next();   // {value: "hello world", done: true}
+  ```
+
+- **生成器函数只会在初次调用 next()方法后开始执行**
+  ```js
+  *generatorFn() {
+    console.info('hello world');
+  }
+
+  // 调用不会打印日志
+  const g = generatorFn();
+  g.next(); // hello world
+  ```
+- 生成器对象实现了 Iterable 接口，它们默认的迭代器是自引用的
+  ```js
+  function *gen() {
+    return '123123';
+  }
+
+  console.log(gen);   // ƒ *generatorFn() { return '123123'; }
+  console.log(gen()[Symbol.iterator]);    // ƒ [Symbol.iterator]() { [native code] }
+  console.log(gen()); // generatorFn {<suspended>}
+  console.log(gen()[Symbol.iterator]());  // generatorFn {<suspended>}
+  const g = gen();
+  console.log(g === g[Symbol.iterator]())   // true
+  ```
+
+#### 通过 yield 中断执行
+yield 关键字可以让生成器停止和开始执行，也是生成器最有用的地方。生成器函数在遇到 **yield 关键字之前会正常执行**。**遇到这个关键字后，执行会停止，函数作用域的状态会被保留**。停止执行的生 成器函数只能通过在生成器对象上调用 next()方法来恢复执行：
+```js
+function *gen() {
+  yield 'hello';
+}
+
+const g = gen();
+console.info(g.next());   // { done: false, value: 'hello' }
+console.info(g.next());   // { done: true, value: undefined }
+```
+
+此时的 yield 关键字有点像函数的中间返回语句，它生成的值会出现在 next()方法返回的对象里。通过yield关键子退出的生成器会处在 `done: false` 的状态，通过return 退出的生成器函数会处于 `done: true` 状态
+```js
+function *gen() {
+  yield 'foo';
+  yield 'bar';
+  return 'baz';
+}
+const g = gen();
+console.log(g.next());  // { done: false, value: 'foo' }
+console.log(g.next());  // { done: false, value: 'bar' }
+console.log(g.next());  // { done: true, value: 'baz' }
+```
+
+> 生成器函数内部的执行流程会针对每个生成器对象区分作用域。在一个生成器对象上调用 next() 不会影响其他生成器
+
+> yield 关键字只能在生成器函数内部使用，用在其他地方会抛出错误。
+
+##### 生成器对象作为可迭代对象
+在生成器对象上显式调用 next()方法的用处并不大。可作为可迭代对象
+```js
+function *gen() {
+  yield 1;
+  yield 2;
+  yield 3;
+}
+
+for (const x of gen()) {
+  console.log(x);
+}
+
+// 1
+// 2
+// 3
+```
+在需要自定义迭代对象时，这样使用生成器对象会特别有用。比如，我们需要定义一个可迭代对象， 而它会产生一个迭代器，这个迭代器会执行指定的次数。
+```js
+function *nTimes(n) {
+  while(n--) {
+    yield;
+  }
+}
+
+for (const _ of nTimes(3)) {
+  console.log('hello world');
+}
+// hello world
+// hello world
+// hello world
+```
+
+##### 使用 yield 实现输入和输出
+除了可以作为函数中间返回语句使用，yield 关键字还可以作为函数的中间参数使用。上一次让生成器函数暂停的 yield 关键字会接收到传给 next()方法的第一个值。
+***第一次调用 next()传入的值不会被使用，因为这一次调用是为了开始执行生成器函数***
+```js
+function *generatorFn(initial) {
+  console.log(initial);
+  console.log(yield);
+  console.log(yield);
+}
+
+let gObj = gen('foo');
+gObj.next('bar'); // foo (第一次使用的是初始值)
+gObj.next('baz'); // baz
+gObj.next('qux'); // qux
+```
+
 
