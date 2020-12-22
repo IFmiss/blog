@@ -326,6 +326,9 @@ for (const _ of nTimes(3)) {
 function *generatorFn(initial) {
   console.log(initial);
   console.log(yield);
+  // 相当于
+  // const a = yield;
+  // console.log(yield);
   console.log(yield);
 }
 
@@ -334,5 +337,113 @@ gObj.next('bar'); // foo (第一次使用的是初始值)
 gObj.next('baz'); // baz
 gObj.next('qux'); // qux
 ```
+> next 的参数值可以当作 yield 关键字的返回值；**由于next方法的参数表示上一个yield表达式的返回值，所以在第一次使用next方法时，传递参数是无效的。**
 
+看这个例子 (来自 https://es6.ruanyifeng.com/#docs/generator )
+```js
+function* foo(x) {
+  var y = 2 * (yield (x + 1));
+  var z = yield (y / 3);
+  return (x + y + z);
+}
+
+const a = foo(5);
+a.next(); 
+// 第一个next 执行 x + 1  { done: false, value: 6 }
+
+a.next(); 
+// 第二个next参数表示第一个 yield 的返回值
+// 这时候 执行 2 * undefined 值为 NaN 再除以3 并返回
+// 还是 NaN  { done: false, value: NaN }
+
+a.next();
+// 第三个next参数表示第二个 yield 的返回值：undefined
+// 执行 5 + NaN + undefined
+// 结果为  { done: true, value: NaN }
+
+const b = foo(5);
+b.next();
+// 第一个next 执行 x + 1  { done: false, value: 6 }
+
+b.next(12);
+// 第二个next参数表示第一个 yield 的返回值
+// 这时候 执行 2 * 12 值为 24 再除以3 并返回
+// 结果为 { done: false, value: 8 }
+
+b.next(13);
+// 第三个next参数表示第二个 yield 的返回值： z = 13; y = 24
+// 执行 5 + 24 + 13
+// 结果为  { done: true, value: 42 }
+```
+> next 可以理解 **参数作为上一次 yield 的返回值，执行下一次 yield 或者 return 的动作**，因为第一次next 没有yield，所以next 的第一次传参无效
+
+##### 产生可迭代对象
+可以使用星号增强 yield 的行为，让它能够迭代一个可迭代对象，从而一次产出一个值
+```js
+function *gen() {
+  yield* [1, 2, 3];
+}
+
+const g = gen();
+for (const x of g) {
+  console.log(x);
+}
+// 1
+// 2
+// 3
+```
+与生成器类似，yield 两侧空格不影响其行为
+```js
+function* generatorFn() {
+  yield* [1, 2];
+  yield* [3, 4];
+  yield* [5, 6];
+}
+
+for (const x of generatorFn()) {
+  console.log(x);
+}
+
+// 1
+// 2
+// 3
+// 4
+// 5
+// 6
+```
+> **yield*实际上只是将一个可迭代对象序列化为一连串可以单独产出的值，所以这跟把 yield 放到一个循环里没什么不同**
+
+```js
+function *gen() {
+  for(const v of [1, 2, 3]) {
+    yield v;
+  }
+}
+
+// 等同于
+
+function *gen() {
+  yield* [1, 2, 3];
+}
+```
+对于生成器产生的迭代器来说，这个值就是生成器函数的返回值
+```js
+function *innerGeneratorFn() {
+  yield 'foo';
+  yield 'zzz';
+  return 'bar';
+}
+
+function *outGen() {
+  console.log('iter value:', yield* innerGeneratorFn());
+}
+
+for (const x of outGen()) {
+  console.log('value:', x);
+}
+// 遍历三个次 前两个yield 返回结果值，最后一个为 outGen 的返回值
+// value: foo;
+// value: zzz;
+// iter value: bar
+```
 

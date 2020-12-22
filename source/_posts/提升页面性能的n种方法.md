@@ -11,6 +11,30 @@ tags: [总结]
 - #### http接口合并请求
   后端接口聚合 或者 中间层聚合(`graphQL`)
 
+### 控制资源优先级
+  - #### 控制阻塞资源
+    - ###### 控制 script type **`defer`** or  **`async`** 标签达到低优先级, 避免阻塞主线程
+    ![defer and async](./提升页面性能的n种方法/defer&async.jpeg)
+    - ###### 避免 `js` 存放于 head 中
+  - #### css 避免阻塞
+    当一个媒体查询的结果值计算出来是 false 的时候 (`media` 设置非 `all`)，浏览器仍然会下载样式表，但是不会在渲染页面之前等待样式表的资源可用
+    ```jsx
+    // jsx
+    <link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Caveat&display=swap"
+      media="none"
+      onLoad={(rel) => {
+      if (rel.currentTarget.media != 'all') {
+        rel.currentTarget.media = 'all'
+      }
+    }}>
+    </link> 
+    ``` 
+
+### CSS 优化
+- content-visibility
+- will-change
+
 ### 预加载，预请求
 - #### preconnect
   ![preconnect](./提升页面性能的n种方法/preconnect.webp)
