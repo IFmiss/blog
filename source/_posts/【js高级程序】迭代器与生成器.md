@@ -441,9 +441,85 @@ function *outGen() {
 for (const x of outGen()) {
   console.log('value:', x);
 }
-// 遍历三个次 前两个yield 返回结果值，最后一个为 outGen 的返回值
+// 遍历三个次 前两个yield 返回结果值，最后一个为 innerGeneratorFn 的返回值 原样输出
 // value: foo;
 // value: zzz;
 // iter value: bar
+```
+
+##### 使用 yield* 实现递归算法
+```js
+export function *nTimes(n){
+  if (n > 0) {
+    yield* nTimes(n - 1);
+    yield n - 1;
+  }
+}
+
+const g = nTimes(3);
+for (const x of g) {
+  console.info(x);
+}
+// 0
+// 1
+// 2
+```
+
+**注意：**
+```js
+function *foo() {
+  yield 2;
+  yield 3;
+}
+
+function *bar() {
+  yield 1;
+  yield* foo();
+  yield 4;
+}
+// 等同于
+function *bar() {
+  yield 1;
+  yield 2;
+  yield 3;
+  yield 4;
+}
+```
+
+#### 生成器作为默认迭代器
+```js
+export class Foo {
+  constructor () {
+    this.values = [1, 2, 3];
+  }
+
+  *[Symbol.iterator]() {
+    yield* this.values;
+  }
+}
+
+const f = new Foo();
+for (const a of f) {
+  console.info('a', a);
+}
+// a 1
+// a 2
+// a 3
+```
+for-of 循环调用了默认迭代器（它恰好又是一个生成器函数）并产生了一个生成器对象。 这个生成器对象是可迭代的，所以完全可以在迭代中使用
+
+#### 提前终止迭代器
+##### 1. return()
+return()方法会强制生成器进入关闭状态。后续调用 next()会显示 done: true 状态
+```js
+function *gen() {
+  yield* [1, 2, 3];
+}
+
+const g = gen();
+console.info(g);  // gen {<suspended>}
+console.info(g.next()); // { value: 1, done: false }
+console.info(g.return(10)); // { value: 10, done: true }
+console.info(g);  // gen {<closed>}
 ```
 
