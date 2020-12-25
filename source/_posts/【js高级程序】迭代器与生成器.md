@@ -523,3 +523,51 @@ console.info(g.return(10)); // { value: 10, done: true }
 console.info(g);  // gen {<closed>}
 ```
 
+##### 2. throw()
+**throw()方法会在暂停的时候将一个提供的错误注入到生成器对象中**。如果错误未被处理，生成器就会关闭
+```js
+function *gen(){
+  for (const v of [1, 2, 3]) {
+    yield x;
+  }
+}
+
+const g = gen();
+console.log(g);
+try {
+  g.throw('foo');
+} catch (e) {
+  console.log(e); // foo
+}
+
+console.log(g);   // generatorFn {<closed>}
+```
+
+**假如生成器函数内部处理了这个错误，那么生成器就不会关闭，而且还可以恢复执行**。错误处理会跳过对应的 yield，因此在这个例子中会跳过一个值。
+```js
+function *gen(){
+  for (const x of [1, 2, 3]) {
+    try {
+      yield x;
+    } catch (e) {}
+  }
+}
+
+const g = gen();
+console.log(g.next()); // { done: false, value: 1}
+g.throw('foo');
+console.log(g.next()); // { done: false, value: 3}
+```
+
+> 如果生成器对象还没有开始执行，那么调用 throw()抛出的错误不会在函数内部被捕获，因为这相当于在函数块外部抛出了错误。
+
+### 小结
+迭代是一种所有编程语言中都可以看到的模式。ECMAScript 6 正式支持迭代模式并引入了两个新的语言特性：**迭代器**和**生成器**。
+
+迭代器是一个可以由任意对象实现的接口，支持连续获取对象产出的每一个值。
+任何实现 `Iterable` 接口的对象都有一个 `Symbol.iterator` 属性，这个属性引用默认迭代器。
+
+迭代器必须通过连续调用 `next()`方法才能连续取得值，这个方法返回一个 `IteratorObject`。这个接口可以通过手动反复调用 `next()`方法来消费，也可以通过原生消 费者，比如 `for-of` 循环来自动消费。
+
+生成器是一种特殊的函数，调用之后会返回一个生成器对象。生成器对象实现了 `Iterable` 接口， 因此可用在任何消费可迭代对象的地方。
+
