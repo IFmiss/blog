@@ -86,4 +86,146 @@ console.log(Object.getOwnPropertyDescriptors(person));
   - 默认值为 **`undefined`**
 
 访问器属性是不能直接定义的，必须使用 Object.defineProperty()。
+```js
+let book = {
+  year_: 2017,
+  edition: 1
+}
 
+Object.defineProperty(book, 'year', {
+  get() {
+    return this.year_;
+  },
+
+  set(newV) {
+    if (newV > 2017) {
+      this.year_ = newV;
+      this.edition ++;
+    }
+  }
+})
+
+book.year = 2018;
+console.log(book.edition);  // 2
+```
+
+#### 定义多个属性
+实例代码没有设置属性的可写操作，代码是没有办法跑通的，这里设置 `year_` , `edition` 可写
+```js
+let book = {}
+
+Object.defineProperties(book, {
+  year_: {
+    value: 2017,
+    writable: true
+  },
+  edition: {
+    value: 1,
+    writable: true
+  },
+  year: {
+    get() {
+      return this.year_;
+    },
+  
+    set(newV) {
+      if (newV > 2017) {
+        this.year_ = newV;
+        this.edition ++;
+      }
+    }
+  }
+})
+
+console.log(book.edition) // 1
+book.year = 2018;
+console.log(book.edition); // 2
+```
+
+#### 读取属性的特性
+**Object.getOwnPropertyDescriptor()** 方法可以取得指定属性的属性描述符。
+接受两个参数:
+- 目标对象
+- 属性名称
+接着上一个实例使用 `book` 对象
+```js
+let descriptor = Object.getOwnPropertyDescriptor(book, 'year_');
+console.log(descriptor);
+// configurable: false
+// enumerable: false
+// value: 2018
+// writable: true
+
+console.log(Object.getOwnPropertyDescriptor(book, 'year'));
+// configurable: false
+// enumerable: false
+// get: ƒ ()
+// set: ƒ (newV)
+```
+对于**数据属性** `year_`，value 等于原来的值，configurable 是 false，get 是 undefined，writable 是 true
+对于**访问器属性** `year`，value 是 undefined，enumerable 是 false，get 是一个指向获取函数的指针
+
+**Object.getOwnPropertyDescriptor()**会在每个自有属性上调用 `Object.getOwnPropertyDescriptor()`，接收一个参数
+- 目标对象
+
+```js
+conosle.log(Object.getOwnPropertyDescriptor(book));
+// {
+//   edition: {
+//     configurable: false
+//     enumerable: false
+//     value: 2
+//     writable: true
+//   },
+//   year: {
+//     configurable: false
+//     enumerable: false
+//     get: ƒ ()
+//     set: ƒ (newV)
+//   },
+//   year_: {
+//     configurable: false
+//     enumerable: false
+//     value: 2018
+//     writable: true
+//   }
+// }
+``` 
+
+#### 合并对象
+**Object.assign()** ECMAScript 6 专门为合并对象提供的方法
+这个方法接收 **一个目标对象** 和 **一个或多个源对象** 作为参数，然后将每个源对象中
+- `可枚举（Object.propertyIsEnumerable()返回 true）` 和
+- `自有（Object.hasOwnProperty()返回 true）属性` 复制到目标对象。
+使用每一个源对象(即被复制的值)的`[[Get]]`取得属性值，然后使用目标对象的`[[Set]]`设置属性的值
+```js
+let dest = {};
+let src = { id: 'src' }
+let result = Object.assign(dest, src);
+console.log(dest === result);   // true
+console.log(dest !== src);    // true
+console.log(result); //  { id: 'src' }
+```
+> Object.assign()实际上对每个源对象执行的是浅复制。如果多个源对象都有相同的属性，则使 用最后一个复制的值。
+
+#### 对象标识及相等判定
+**`Object.is`** 方法与===很像，但同时也考虑到了边界情形
+方法接收两个参数: 被比较的两个值；
+```js
+let a = [];
+console.log(Object.is(a, a)); // true
+console.log(Object.is(a, []));  // false
+
+let b = NaN;
+console.log(b === b); // false  
+console.log(Object.is(b, b)); // true
+
+console.log(+0 === -0); // true
+console.log(Object.is(+0, -0)); //  false
+```
+要检查超过两个值，递归地利用相等性传递即可：
+```js
+function recursivelyCheckEqual(x, ...rest) {
+  return Object.is(x, rest[0]) && (rest.length < 2 || recursivelyCheckEqual(...rest));
+}
+```
