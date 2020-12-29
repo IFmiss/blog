@@ -229,3 +229,140 @@ function recursivelyCheckEqual(x, ...rest) {
   return Object.is(x, rest[0]) && (rest.length < 2 || recursivelyCheckEqual(...rest));
 }
 ```
+
+#### 增强的对象语法
+##### 1. 属性值简写
+```js
+let name = 'Matt';
+let person = {
+  name
+};
+```
+
+##### 2. 可计算属性
+```js
+const nameKey = 'name';
+const ageKey = () => 'age';
+const jobKey = 'job';
+
+let person = {
+  [nameKey]: 'Matt',
+  [ageKey()]: 27,
+  [jobKey]: 'Software engineer'
+};
+```
+> 可计算属性表达式中抛出任何错误都会中断对象创建。如果计算属性的表达式有副作用，那就要小心了，因为如果表达式抛出错误，那么之前完成的计算是不能回滚的。
+
+##### 3. 对象解构
+```js
+const person = {
+  name: 'dw',
+  age: 27,
+  job: 'fed'
+}
+
+const { name, ...rest } = person;
+// name   dw
+// rest   { age: 27, job: 'fed' }
+```
+关于对象解构的具体内容可以看这里: [es6入门 - 变量解构](https://es6.ruanyifeng.com/#docs/destructuring#%E5%AF%B9%E8%B1%A1%E7%9A%84%E8%A7%A3%E6%9E%84%E8%B5%8B%E5%80%BC)
+
+
+### 创建对象
+#### 工厂模式
+工厂模式是一种众所周知的设计模式，广泛应用于软件工程领域，用于抽象创建特定对象的过程。
+```js
+function createPerson(name, age, job) {
+  let o = new Object();
+  o.name = name;
+  o.age = age;
+  o.job = job;
+  o.sayName = function() {
+    console.log(this.name);
+  };
+  return o;
+}
+
+let person1 = createPerson("Nicholas", 29, "Software Engineer");
+let person2 = createPerson("Greg", 27, "Doctor");
+```
+`createPerson` 每次执行都会返回包含 3 个属性和 1 个方法的对象
+
+#### 构造函数模式
+```js
+function Person(name, age, job) {
+  this.name = name;
+  this.age = age;
+  this.job = job;
+  this.sayName = function() {
+    console.log(this.name);
+  };
+}
+let person1 = new Person("Nicholas", 29, "Software Engineer");
+let person2 = new Person("Greg", 27, "Doctor");
+
+person1.sayName();  // Nicholas
+person2.sayName();  // Greg
+```
+要创建 Person 的实例，应使用 new 操作符。以这种方式调用构造函数会执行如下操作。
+- 内存创建新对象
+- 新对象的 `__proto__` 属性被赋值为函数的 `prototype` 属性
+- 构造函数的 `this` 被赋值为这个新对象 (即 `this` 指向新对象)
+- 执行构造函数内部代码 (即创建对象属性)
+- 如果构造函数返回非空对象，则返回该对象；否则，返回刚创建的对象。
+
+##### 1. 构造函数也是函数
+作为构造函数调用
+```js
+let person = new Person("Nicholas", 29, "Software Engineer");
+person.sayName(); // "Nicholas"
+```
+
+作为函数调用
+```js
+Person("Greg", 27, "Doctor"); // 添加到 window 对象
+window.sayName(); // "Greg"
+```
+
+在另外一个对象作用域中调用
+```js
+let o = new Object();
+Person.call(o, "Kristen", 25, "Nurse");
+o.sayName();   // "Kristen"
+```
+
+使用 new 操作符创建一个新对象。然后是普通 函数的调用方式，这时候没有使用 new 操作符调用 Person()，结果会将属性和方法添加到 window 对象。
+
+> 在调用一个函数而没有明确设置 this 值的情况下（即没有作为对象的方法调用，或者没有使用 call()/apply()调用），this 始终指向 Global 对象（在浏览器中就是 window 对象）。
+
+> 构造函数与普通函数唯一的区别就是调用方式不同。
+
+##### 2. 构造函数的问题 (定义的方法会在每个实例上都创建一遍)
+person1 和 person2 都有名为 sayName()的方法，但这两个方 法不是同一个 Function 实例。
+```js
+console.log(person1.sayName == person2.sayName); // false
+```
+*可以把函数定义转移到构造函数外部*
+```js
+function Person(name, age, job) {
+  this.name = name;
+  this.age = age;
+  this.job = job;
+  this.sayName = sayName;
+}
+
+function sayName() {
+  console.log(this.name);
+}
+
+let person1 = new Person("Nicholas", 29, "Software Engineer");
+let person2 = new Person("Greg", 27, "Doctor");
+
+person1.sayName();  // Nicholas
+person2.sayName();  // Greg
+console.log(person1.sayName == person2.sayName); // true
+```
+> 但是这么做又有问题： 函数作用域问题，所以会有更好的方式来创建对象 => 原型模式
+
+#### 原型模式
+
