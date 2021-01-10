@@ -8,10 +8,17 @@ tags: [总结]
 ### 减少资源请求
 - #### `css spirites`
   图片资源合并一张，background-position 显示
+- #### 图片懒加载
+  图片懒加载实现视口的资源请求，避免在没有曝光的情况下，加载不必要的资源
 - #### http接口合并请求
-  后端接口聚合 或者 中间层聚合(`graphQL`)
+  后端接口聚合 或者 中间层接口聚合(`graphQL`)
 
 ### 控制资源优先级
+  - #### js css 排放位置
+    css 位于body 顶部
+    js 位于body 底部
+  - #### 避免阻塞主线程（long Task）
+    超过 50ms 的js任务可理解为 long Task，
   - #### 控制阻塞资源
     - ###### 控制 script type **`defer`** or  **`async`** 标签达到低优先级, 避免阻塞主线程
     ![defer and async](./提升页面性能的n种方法/defer&async.jpeg)
@@ -32,8 +39,10 @@ tags: [总结]
     ``` 
 
 ### CSS 优化
-- content-visibility
-- will-change
+- #### content-visibility
+  提高渲染性能，可以跳过在屏幕外的内容渲染初始化页面的加载时间
+- #### CSS3 触发 GPU 加速
+  使用 opcatiy or css 3d 触发 GPU 加速，配合will-change 通过告知浏览器该元素会有哪些变化，使浏览器提前做好优化准备，增强页面渲染性能
 
 ### 预加载，预请求
 - #### preconnect
@@ -56,8 +65,15 @@ tags: [总结]
   ```
 
 ### 缓存
+- #### Http缓存
+
 - cache-control，expires
 
+- #### 模版数据缓存
+  模板 JS + 数据填充，减少访问量大的页面频繁的资源请求导致性能损耗
+
+#### ServiceWork缓存 + 离线缓存
+使用 ServiceWork 实现静态资源，网络请求，甚至在离线环境下的数据展示，提升用户体验
 
 ### 体积优化
 - #### 文件压缩
@@ -77,7 +93,10 @@ tags: [总结]
   ```
 
 ### 外部优化
-- 使用CDN
+- #### 静态资源CDN
+  CDN (Content Delivery Network) 从技术上全面解决由于网络带宽小、用户访问量大、网点分布不均等原因，提高用户访问网站的响应速度
+- #### WebWorker
+  处理密集型运算时可使用 WebWorker 单独开辟线程, 让脚本单独创建一个 JavaScript 线程，以执行委托的任务
 
 ### webview优化
 
