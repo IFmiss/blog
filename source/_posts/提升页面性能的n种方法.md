@@ -21,7 +21,7 @@ tags: [总结]
     超过 50ms 的js任务可理解为 long Task，
   - #### 控制阻塞资源
     - ###### 控制 script type **`defer`** or  **`async`** 标签达到低优先级, 避免阻塞主线程
-    ![defer and async](./提升页面性能的n种方法/defer&async.jpeg)
+    ![defer and async](https://www.daiwei.site/static/blog/提升页面性能的n种方法/defer&async.jpeg)
     - ###### 避免 `js` 存放于 head 中
   - #### css 避免阻塞
     当一个媒体查询的结果值计算出来是 false 的时候 (`media` 设置非 `all`)，浏览器仍然会下载样式表，但是不会在渲染页面之前等待样式表的资源可用
@@ -47,7 +47,7 @@ tags: [总结]
 
 ### 预加载，预请求
 - #### preconnect
-  ![preconnect](./提升页面性能的n种方法/preconnect.webp)
+  ![preconnect](https://www.daiwei.site/static/blog/提升页面性能的n种方法/preconnect.webp)
   允许浏览器在将HTTP请求实际发送到服务器之前建立早期连接。可以预先启动诸如`DNS查找`，`TCP握手`和`TLS协商`之类的连接，从而消除了这些连接的往返延迟，并为用户节省了时间。
   #####  执行代码
   ```html
@@ -66,9 +66,29 @@ tags: [总结]
   ```
 
 ### 缓存
-- #### Http缓存
+- #### Http缓存 
+  - **强缓存**（按照优先级排序）
+    - **cache-control**（HTTP/1.1中定义）
+      ```code
+      add_header    Cache-Control  max-age=3600;
+      ```
+      > 设置 Cache-Control 则会覆盖 `expires` 设置
 
-- cache-control，expires
+    - **expires**（HTTP/1.0中定义）
+      expires 设置资源缓存的时间
+      ```nginx
+      # 设置一天后过期  s: 秒， m: 分， h: 时， d: 天
+      expires 1d;
+      ```
+  - **协商缓存**（按照优先级排序）
+    第一次请求数据时，服务器会返回缓存标识和数据资源，客户端会将缓存标识与数据保存在本地
+    第二次请求数据时，会将缓存标识发送给服务器，服务器根据标识判断，如果可以使用缓存，则返回304状态码，浏览器使用缓存的数据内容
+    - **Etag  /  If-None-Match**
+      Etag：服务器响应请求时，告诉浏览器当前资源在服务器的唯一标识（生成规则由服务器决定）
+      If-None-Match：再次请求服务器时，会将标识发送给服务器，服务器发现 `If-None-Match` 与被请求资源的标识一致时，则返回304，并从本地缓存获取资源，否则重新获取新数据
+    - **Last-Modified  /  If-Modified-Since**
+      Last-Modified：服务器在响应请求时，告诉浏览器资源的最后修改时间。
+      If-Modified-Since：下次请求时会带上此前的资源修改时间，
 
 - #### 模版数据缓存
   模板 JS + 数据填充，减少访问量大的页面频繁的资源请求导致性能损耗
