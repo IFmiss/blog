@@ -4,6 +4,7 @@ date: 2020-01-05 15:14:03
 categories: react
 tags: [react, js]
 ---
+
 react hook 是react 在16.8的react新特性，使用hooks可以在函数组件中实现class组件中的状态和生命周期等一些功能
 
 ### 为什么会有Hook 

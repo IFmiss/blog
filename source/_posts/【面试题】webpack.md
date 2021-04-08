@@ -1,0 +1,121 @@
+---
+title: 【面试题】webpack
+date: 2021-03-28 16:31:42
+categories: webapck
+tags: [webapck, 面试]
+---
+
+### Webpack-Loaders 与 Plugins 的区别?
+
+- **执行顺序**
+  loaders: 自下而上，自右向左边 (compose 的函数式编程方式)
+  plugins: 自上而下，根据顺序挂载插件钩子。
+- **作用**
+  loaders: 用于对模块的源代码进行转换，单纯的文件转换过程
+  plugins: 目的在于解决 loader 无法实现的其他事
+- plugin 可以扩展 webpack 的功能，使得 webpack 更加灵活。可以在构建的过程中通过 webpack 的 api 改变输出的结果
+
+### Webpack 用过哪些 Plugins
+
+- `html-webpack-plugin`
+  - 创建 HTML 页面文件到你的输出目录
+  - 将 webpack 打包后的 chunk 自动引入到这个 HTML 中
+- `mini-css-extract-plugin`
+  该插件将 CSS 提取到单独的文件中。它为每个包含 CSS 的 JS 文件创建一个 CSS 文件。支持 CSS 和 SourceMap 的按需加载。
+- `clean-webpack-plugin`
+  用于删除/清理您的构建文件夹
+- `optimize-css-assets-webpack-plugin`
+  用于优化\最小化 CSS 资源，解决 extract-text-webpack-plugin CSS 重复问题问题
+- `terser-webpack-plugin`
+  最小化您的 JavaScript 代码
+- `webpack-bundle-analyzer`
+  使用交互式可缩放树图可视化 webpack 输出文件的大小。
+- `happypack`
+  通过并行转换文件使初始 Webpack 的构建速度更快
+- `webpack.DllPlugin`
+  DLL(Dynamic Link Library)文件为动态链接库文件
+  把复用性较高的第三方模块打包到动态链接库中，在不升级这些库的情况下，动态库不需要重新打包，每次构建只重新打包业务代码
+- `webpack.DefinePlugin`
+  定义全局变量，用于处理不同环境的变量配置
+- `image-minimizer-webpack-plugin`
+  该插件使用 imagemin 优化图像。
+
+### Webpack 用过哪些 Loader
+
+- `babel-loader`
+  ES6+ 代码转换成 ES5 浏览器支持的语法
+- `css-loader`
+  加载 CSS，支持模块化引入，es6 require
+- `style-loader`
+  CSS 代码注入到 JavaScript 中，通过 DOM 操作去加载 CSS
+- `postcss-loader`
+  扩展 CSS 语法，使用下一代 CSS，可以配合 autoprefixer 插件自动补齐 CSS3 前缀
+- `sass|less|stylus-loader`
+  (sass|less|stylus) 编译成 css
+- `vue-loader`
+  加载 Vue.js 单文件组件
+- `url-loader`
+  代码中通过模块引入方式相对 URL 去引用输出的文件，支持转化 Base64
+- `ts-loader`
+  TypeScript 转换成 JavaScript
+- `@svgr/webpack`
+  用于 SVGR 的 Webpack 加载器。
+
+### 什么是 bundle,chunk,module
+
+- bundle 是 webpack 打包出来的文件
+- chunk 是 webpack 在进行模块的依赖分析的时候，代码分割出来的代码块，包含多个 module
+- module 是开发中的单个模块
+
+### webpack 构建的简单原理
+
+1. 合并配置参数
+   将 shell 命令的配置和 webpack 配置文件合并生成最终的配置参数。
+2. 开始编译
+   初始化 compiler 对象，注册所有插件，插件监听 Webpack 构建生命周期的事件节点，做出相应的反应，执行对象的 run 方法开始执行编译
+3. 确定入口
+   entry 确认所有入口文件
+4. 编译模块
+   从入口出发，调用各个配置的 loader 对模块进行翻译，递归找出模块的依赖模块。
+5. 完成模块编译
+   第 4 步之后将会得到所有模块之间的关系，以及模块编译之后的最终内容
+6. 输出资源
+   根据入口和模块的依赖关系，组装成一个个包含多个模块的 Chunk，再把每个 chunk 转换成一个单独的文件并加入到输出列表中
+7. 输出完成
+   确认好输出内容后,根据配置确认输出的路径和文件名,把文件内容写入到文件系统中
+
+### webpack 热更新原理
+
+1. 通过 webapck-dev-server 负责启动一个 express 服务器监听客户端请求，webpack-dev-middleware 调用 webpack 暴露的 API 对代码变化进行监控，并且告诉 webpack 将代码打包到内存中。
+2. webapck-dev-server 对文件变化的一个监听，[devServer.watchContentBase](https://webpack.js.org/configuration/dev-server/#devserverwatchcontentbase)为 true 时，静态资源变化出发 live reload，这儿是浏览器刷新，和 HMR 是两个概念
+3. webapck-dev-server 通过 sockjs 与浏览器建立一个长链接，将 webpack 编译的各个阶段的状态发送给浏览器，包括设置的静态文件变化。
+   **服务端传递的最主要信息还是新模块的 hash 值，后面的步骤根据这一 hash 值来进行模块热替换。**
+4. 根据 webpack dev-server 的配置决定要不要走 hmr，否则直接 live reload
+5. 如果配置热更新， 则通过 JsonpMainTemplate.runtime 向服务端发起一个 ajax 请求，返回一个包含所有需要更新模块的 Hash 值的 JSON 文件，获取到更新列表后，该模块再次通过 jsonp 请求，获取到最新的模块代码。
+6. HotModulePlugin 针对新旧模块对比，是否要更新模块，更新的同时也会更新对应的依赖引用
+7. 如果更新失败，则执行 live reload
+
+### 如何提升 webpack 构建速度
+
+1. dll 动态链 将更改不频繁的代码进行单独编译。
+2. 缩小构建目标 减少 resolve 解析
+3. cache-loader 缓存
+4. 多进程构建开启，或者用相关的插件
+5. 关联应用范围缩小
+6. 升级最新版本
+
+### 如何缩小 webpack 构建文件的体积
+
+1. mode production 自带 tree shacking
+2. 文件压缩
+3. 分包策略 splitChunck
+4. 按需加载，动态引入
+5. externals 外部引入
+6. 优化静态资源大小，如图片
+7. 不使用的代码可以不引入，解决方案如：babel-plugin-import
+
+### Tree-shaking 的原理
+
+### Compile 与 Compilation
+
+### 配置 sourceMap 与 原理

@@ -27,4 +27,4 @@ select * from tb_user_info Where 'username' = '' or 1 = 1 and 'password' = ''
 针对前端在表单提交之前进行数据格式校验
 
 ##### 服务端sql转译
-后端采用sql语句预编译和绑定变量，是防御sql注入的最佳方法 
+后端采用sql语句预编译和绑定变量，是防御sql注入的最佳方法
