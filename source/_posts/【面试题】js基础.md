@@ -80,7 +80,7 @@ console.log(user.getName());
 console.log(user.age);
 ```
 
-- ES5 是先创建子类实例对象的 this，然后将父类方法然后再将父类的方法添加到 this 上面（Parent.apply(this)）。
+- ES5 是先创建子类实例对象的 this，然后再将父类的方法添加到 this 上面（Parent.apply(this)）。
 - ES6 的继承机制完全不同，实质是先将父类实例对象的属性和方法，加到 this 上面（所以必须先调用 super 方法），然后再用子类的构造函数修改 this。
 
 ### 以下代码执行结果
@@ -102,7 +102,7 @@ var b = 10;
   // IIFE的函数无法进行赋值（内部机制，类似const定义的常量），所以无效。
   // 在非匿名自执行函数中，函数变量为只读状态无法修改
   b = 20; // 执行无效
-  console.log(b);
+  console.log(b); // [Function b]
 })();
 ```
 
@@ -331,4 +331,7 @@ console.log(b1.color); // ["green", "yellow", "Lily"]
 console.log(b2.color); // ["green", "yellow", "Lily"]
 ```
 
+### e.target 和 e.currentTarget 区别
 
+- e.target 返回触发事件的元素
+- e.currentTarget 返回绑定事件的元素

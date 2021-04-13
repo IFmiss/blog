@@ -30,3 +30,42 @@ Libuv 是一个高性能的，事件驱动的异步 I/O 库，它本身是由 C 
 
 Node 11 以后:
 类似浏览器事件循环
+
+### 介绍以下 nodejs 中间件
+
+中间件主要是指封装 http 请求细节处理的方法。引入了 Node 中间件来简化和封装这些基础逻辑处理细节。
+
+### node 性能优化
+
+- 使用最新版本的 Node.js
+- 避免使用同步代码
+- 缓存静态文件
+- 使用 gzip
+- 实现 SSL/TLS 和 HTTP/2
+- 读写分离
+- 多进程架构
+
+### node 错误监控
+
+- 语法错误，运行时错误触发 JavaScript error
+- 访问不存在的文件触发系统错误。
+- 自定义 error
+
+**日志**
+
+- nginx log
+- log4js
+- pm2 log
+
+### koa2 中间件原理。
+
+🧅 洋葱模型
+通过 use() 注册多个中间件放入数组中，从外层开始往内执行，遇到 next()执行下一个中间件，所有中间件执行完成之后，开始返回，一次执行中间件未执行的部分。
+
+### node 如何进行跨域通信
+
+Node 设置允许跨域
+
+```js
+res.header("Access-Control-Allow-Origin", "https://www.daiwei.site");
+```
