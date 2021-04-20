@@ -57,13 +57,11 @@ React 并不是将 click 绑定在真实 DOM 上，而是绑定在 document（17
 
 ### 说一下 React fiber
 
-React 框架内部的运作可以分为 3 层
-
-- Virtual DOM 层，描述页面长什么样
-- Reconciler 层，负责调用组件生命周期方法，进行 Diff 运算等
-- Renderer 层，根据不同的平台，渲染出相应的页面，比较常见的是 ReactDOM 和 ReactNative。
-
 Fiber 其实指的是一种数据结构，它可以用一个纯 JS 对象来表示
+
+**Fiber Reconciler** 每执行一段时间，都会将控制权交回给浏览器，可以分段执行
+为了达到这个效果，则需要调度器(Scheduler) 来进行任务分配
+高优先级的任务可以打断低优先级任务
 
 ```js
 const fiber = {
@@ -71,22 +69,19 @@ const fiber = {
   child, // 子节点
   sibling, // 兄弟节点
   return, // 父节点
+  payload, // 挂载的数据
+  type, // 节点类型
 };
 ```
 
-**Fiber Reconciler** 每执行一段时间，都会将控制权交回给浏览器，可以分段执行
-为了达到这个效果，则需要调度器(Scheduler) 来进行任务分配
-
-高优先级的任务可以打断低优先级任务
-
 **Fiber Reconciler** 在执行过程中，会分为 2 个阶段。
 
-- 生成 Fiber 树，得出需要更新的节点信息。这一步是一个渐进的过程，可以被打断。
-- 将需要更新的节点一次过批量更新，这个过程不能被打断。
-
-**Fiber 树**
-
-- Fiber Reconciler 在阶段一进行 Diff 计算的时候，会生成一棵 Fiber 树。这棵树是在 Virtual DOM 树的基础上增加额外的信息来生成的，它本质来说是一个链表。
+- **reconciliation(协调)**
+  这个阶段会执行更新 state 和 props, 调用生命周期, diff, 更新 DOM 的操作。
+  在 Diff 计算的时候，会生成一棵 Fiber 树，本质来说是一个链表。得出需要更新的节点信息。这一步是一个渐进的过程，可以被打断。`React`的`nextUnitOfWork`变量会保留对当前`Fiber`节点的引用。以便随时恢复遍历。
+- **commit(提交)**
+  这个阶段主要：更新 DOM 树、调用组件生命周期函数以及更新 ref 等内部状态。
+  将需要更新的节点一次过批量更新，这个过程不能被打断。
 
 ### React Diff 算法
 
@@ -246,3 +241,44 @@ React Diff 算法中，React 会借助元素的 key 值来判断该元素是新�
 - **数据变化监听**
   - vue 是 ObjectDefineproperty OR Proxy 实现数据的响应处理。
   - React 默认通过比较引用的方式比较，强调数据的不可变。
+
+### React 性能优化
+
+- `React.PureComponent` 对`props`和`state`进行浅层比较。
+- `React.PureComponent` 下使用`shouldComponentUpdate`判断`state`和`props`是否更新。返回`true`更新，返回`false`不更新。
+- `React.memo`默认会对`props`进行浅层比较。`React.memo`的第二个参数可以自定义`props`比较, 返回`true`不更新, 和`shouldComponentUpdate`相反。
+- 在函数组件之中使用`useCallback`或者`useMemo`避免在更新时变量，方法的重复声明。
+- 按需加载
+  - 基于路由的按需加载
+  - 使用`Suspense`和`lazy`实现组件懒加载
+- 批量更新，无论是在`class`组件还是`fc`组件。更新都会合并。但是在`setTimeout`或者`Promise`等异步代码中批量更新会失效。可以使用`react-dom`提供的`unstable_batchedUpdates`手动批量更新。
+- 对于在`jsx`中没有使用的状态, `class`组件可以直接使用实例的属性保存，对于`fc`组件可以使用`useRef`。
+- 超长列表可以使用虚拟列表技术。实际只渲染部分列表
+- 时间分片, 使用`requestAnimationFrame`，或者使用`setTimeout`分割渲染任务，比如从一次性渲染`100000`个列表，使用`requestAnimationFrame`分割成多次渲染。因为`requestAnimationFrame`会在每一次渲染之前执行，使用`requestAnimationFrame`可以分割成多次渲染，每一次渲染`10000`条。
+
+### React 错误边界
+
+目的是某些 UI 崩溃，不至于整个 webapp 崩溃，通过 `componentDidCatch` 监听错误内容
+
+```js
+componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+  // 你同样可以将错误日志上报给服务器
+  console.group();
+  console.log('ErrorBoundary catch a error:');
+  console.info('error', error);
+  console.info('error info', errorInfo);
+  console.groupEnd()
+}
+```
+
+> ⚠️ 必须是 class 组件。
+
+> ⚠️ 错误边界无法捕获如下场景的错误
+> 事件处理
+> 异步代码（例如 setTimeout 或 requestAnimationFrame 回调函数）
+> 服务端渲染
+> 它自身抛出来的错误（并非它的子组件）
+
+### 为什么 react 需要手动引入 `import React from 'react'`
+
+- 本质上来说 JSX 是 React.createElement(component, props, ...children)方法的语法糖。所以我们如果使用了 JSX，我们其实就是在使用 React，所以我们就需要引入 React

@@ -69,3 +69,57 @@ Node 设置允许跨域
 ```js
 res.header("Access-Control-Allow-Origin", "https://www.daiwei.site");
 ```
+
+### require 原理
+
+```js
+let name = require("./a");
+console.log(name);
+```
+
+上述代码引入 `a.js` 文件时候，内部大致发生的流程如下:
+
+- 将 `./a` 转化为绝对路径，并且补充后缀名(`c:\Users\chenying\Desktop\code\a.js`)
+- 根据绝对路径判断缓存中是否存在缓存的文件，如果存在则取缓存，不存在则继续
+- 创建 `Module` 实例 `module`，将绝对路径传入
+- 取得绝对路径的后缀名，根据后缀名(`.js`)调用对应的处理函数
+- 读 `.js` 和 `.json` 文件思路大同小异，通过 fs.readFileSync()读取文件内容
+- 对读到的 `.js` 文件的内容外层包裹一个函数，并且将字符串转成函数执行
+- 对读到的 `.json` 文件的内容，转为对象，并且赋值给`module.exports`
+
+### node 异常处理
+
+- 使用 `try catch` 方式来处理异常
+  > `try catch` 无法处理异步代码块内出现的异常
+- 使用 `event` 方式来处理异常
+
+  ```js
+  const events = require("events");
+  // 创建一个事件监听对象
+  const emitter = new events.EventEmitter();
+  // 监听error事件
+  emitter.addListener("error", (e) => {
+    // 处理异常信息
+    console.log(11122222); // 能打印 1112222 说明异常捕获到了
+    console.log(e);
+  });
+  // 触发 error事件
+  emitter.emit("error", new Error("你代码出错了"));
+  ```
+
+- 自带的 `error first callback` 的方式
+- `Promise` `catch` 方式
+- `process` 方式 `uncaughtException`
+
+  ```js
+  process.on("uncaughtException", (e) => {
+    console.log("我能进来，说明可以处理异常");
+    console.log(e);
+  });
+
+  function testFunc() {
+    throw new Error("error");
+  }
+
+  testFunc();
+  ```
