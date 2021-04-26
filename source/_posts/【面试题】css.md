@@ -79,3 +79,22 @@ link 标签不会阻塞 DOM 解析，单会阻塞 DOM 渲染。
 - 额外的颜色函数。
 
 > 问题则是编译 css 需要时间。
+
+### inline 的元素能设置宽高、margin 属性吗
+
+inline 元素不能设置宽高，外边距只能设置左- 右，不能设置上下
+
+### CSS 选择器
+
+**`div p`** : 所有`div` 下的所有的 `p` 标签
+**`div > p`** : 所有 `div` 下第一层所有的 `p` 标签
+**`div + p`** : 所有 `div` 的兄弟 `p` 标签 (必须位于 div 同级别的后方)
+**`div ~ p`**: : 所有 `div` 的兄弟 `p` 标签 (必须位于 div 同级别的前方)
+**`[title~=flower]`** : 选择 title 属性包含单词 "flower" 的所有元素。**必须是字符快**
+
+- `title="tulip flower ab"` 里面的三个都行，但是 `lower` 就不行
+
+**`[lang|=en]`** : 选择 lang 属性值以 "en" 开头的所有元素。
+**`a[href^="https"]`** : 选择 href 属性值以 "https" 开头的所有 a 元素。
+**`a[href$=".pdf"]`** : 选择 href 属性值以 "pdf" 结尾的所有 a 元素。
+**`a[href*="abc"]`**: 选择其 href 属性值中包含 "abc" 子串的每个 a 元素。

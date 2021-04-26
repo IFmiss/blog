@@ -9,7 +9,7 @@ tags: [node, 面试]
 
 Node 10 及以前:
 
-![Node 事件循环](./【面试题】node/libuv.png)
+![Node 事件循环](https://www.daiwei.site/static/blog/【面试题】node/libuv.png)
 Libuv 是一个高性能的，事件驱动的异步 I/O 库，它本身是由 C 语言编写的，具有很高的可移植性。
 **事件循环的 7 个主要阶段**
 **times：** setTimeout setInterval 回调

@@ -137,7 +137,7 @@ console.log(obj);
 ```
 
 结果
-![结果](./【面试题】基础/object-push.png)
+![结果](https://www.daiwei.site/static/blog/【面试题】js基础/object-push.png)
 [,,1,2], length 为 4
 
 有 length 属性被定义为伪数组
@@ -414,3 +414,99 @@ a instanceof Function;
 - DOMContentLoaded 事件的触发并不受 async 脚本加载的影响。
 
   > async 仅适用于外链，规定脚本异步执行, 执行的时候，有可能页面还没解析完成
+
+### 以下代码执行结果
+
+```js
+function Foo() {
+  getName = function () {
+    console.log(1);
+  };
+  console.log("this is" + this);
+  return this;
+}
+
+Foo.getName = function () {
+  console.log(2);
+};
+Foo.prototype.getName = function () {
+  console.log(3);
+};
+var getName = function () {
+  console.log(4);
+};
+function getName() {
+  console.log(5);
+}
+
+Foo.getName();
+getName();
+Foo().getName();
+getName();
+new Foo.getName();
+new Foo().getName();
+new new Foo().getName();
+```
+
+结果
+
+```js
+Foo.getName(); // 2
+// 构造函数的静态属性（方法）
+
+getName(); // 4
+// 函数声明提前 >  变量声明提前，所以var getName覆盖了function getName
+
+Foo().getName();
+// this is window
+// 1
+// 执行Foo（）函数的时候，全局的getName函数被覆盖，所以输出1
+
+getName(); // 1
+// 因为 上一步全局的getName函数被覆盖，所以输出1
+
+new Foo.getName(); // 2
+// 先执行 Foo.getName 返回一个方法 a，再执行 new a();
+// 实例话只能得到一个空属性的实例，Foo.getName 被执行打印 2
+
+new Foo().getName(); // 3
+// 相当于执行
+// a = new Foo()
+// a.getName();
+
+new new Foo().getName(); // 3
+// 相当于执行
+// a = new Foo();
+// b = a.getName()
+// new b();
+```
+
+> **函数声明提前 > 变量声明提前** 同样的名称会被 变量声明覆盖
+
+### for in 和 for of 的区别
+
+- `for in` 只能遍历 key， `for of` 遍历的是值
+- 对于普通对象没有 `iterator` 接口使用 `for of` 会报错
+- `for in` 循环不仅遍历数字键名，还会遍历手动添加的其它键，甚至包括原型链上的键。`for of` 则不会这样
+
+### 怎么判断一个对象是不是可迭代的
+
+```js
+let o = {};
+typeof o[Symbol.iterator] === "function";
+```
+
+### 宏任务微任务执行顺序
+
+1. 执行宏任务，直至调用栈被清空
+2. 执行宏任务过程遇到微任务，将微任务添加到任务队列中。
+3. 主进程代码执行完成之后，执行将微任务添加到调用栈中，执行代码，这个过程需要清空微任务队列。
+4. 执行完毕之后可能会执行 `requestAnimationFrame` ，然后渲染浏览器
+5. 执行下一轮循环。
+
+### `on` 与 `addEventListener` 的区别
+
+- `on` 是 DOM0 事件处理程序的产物，`addEventListener` 是 DOM 2
+- `on` 只能注册一个事件回调，注册多个会被覆盖，`addEventListener`支持多个
+- `addEventListener` 支持 dom，window，document 等元素，`on` 只支持 html 元素
+- 使用语法存在差异（注册，解绑）
