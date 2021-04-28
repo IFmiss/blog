@@ -510,3 +510,8 @@ typeof o[Symbol.iterator] === "function";
 - `on` 只能注册一个事件回调，注册多个会被覆盖，`addEventListener`支持多个
 - `addEventListener` 支持 dom，window，document 等元素，`on` 只支持 html 元素
 - 使用语法存在差异（注册，解绑）
+
+### a.b.c.d 和 a['b']['c']['d']哪个性能更高
+
+- `a.b.c.d` 比 `a['b']['c']['d']` 性能高点，后者还要考虑`[ ]`中是变量的情况。
+- 后者 `AST` 会大一些，但在 `AST` 解析上消耗的这点时间基本可以忽略不计

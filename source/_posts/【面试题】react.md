@@ -282,3 +282,7 @@ componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
 ### 为什么 react 需要手动引入 `import React from 'react'`
 
 - 本质上来说 JSX 是 React.createElement(component, props, ...children)方法的语法糖。所以我们如果使用了 JSX，我们其实就是在使用 React，所以我们就需要引入 React
+
+### Component 和 PureComponent 的区别
+
+React.PureComponent 与 React.Component 几乎完全相同，**但 React.PureComponent 通过 props 和 state 的浅对比来实现 shouldComponentUpate()**
