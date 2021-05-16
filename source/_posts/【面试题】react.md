@@ -24,7 +24,7 @@ tags: [react, 面试]
 ### React 事件绑定原理
 
 React 并不是将 click 绑定在真实 DOM 上，而是绑定在 document（17 版本绑定在 渲染 React 树的根 DOM 节点中）事件委托，当事件（合成事件： SyntheticEvent）冒泡到 document 时，React 将事件内容封装并交由真正的处理函数执行。
-这样不仅减少内存消耗，也能在组件挂载销毁是统一订阅和一处事件。
+这样不仅减少内存消耗，也能在组件挂载销毁时统一订阅和移除事件。
 
 > 通过事件名 + node key 获取事件的 handler 函数
 
