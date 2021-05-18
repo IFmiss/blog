@@ -525,3 +525,13 @@ class 本身是 构造函数的语法糖，内部使用 构造函数定义，但
 
 `super` 作为对象时，在普通方法中，指向父类的原型对象；在静态方法中，指向父类。
 ES6 规定，在子类普通方法中通过 `super` 调用父类的方法时，方法内部的 this 指向当前的子类实例。
+
+### js 判断是否是整数
+
+```js
+function isInteger(obj) {
+  return typeof obj === "number" && obj % 1 === 0;
+} // 会有隐式类型转换问题 '' 也会返回true
+
+Number.isInteger; // 最终解决方案
+```
