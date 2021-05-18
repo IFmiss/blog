@@ -125,4 +125,55 @@ console.log(name);
   testFunc();
   ```
 
+### `node` 如何创建子进程
+通过 `child_process` 对象中的以下几个方法创建
+- **spawn 方法** child_process.spawn(command[, args][, options])
+  子进程中执行的是非node程序，提供一组参数后，执行的结果以流的形式返回。
+- **exec 方法** child_process.exec(command[, options][, callback])
+  子进程执行的是非node程序，提供一串shell命令，执行结果后以回调的形式返回，它与 execFile不同的是，exec可以直接执行一串shell命令。
+  > 不是基于stream的 存在 命令注入 的安全风险
+- **execFile 方法**  child_process.execFile(file[, args][, options][, callback])
+  子进程中执行的是非node程序, 提供一组参数后，执行的结果以回调的形式返回。
+  > 不是基于stream的 存在 命令注入 的安全风险
+- **fork 方法** child_process.fork(modulePath[, args][, options])
+  子进程执行的是node程序，提供一组参数后，执行的结果以流的形式返回，它与spawn不同的是，fork生成的子进程只能执行node应用。
+
 ### `node` 中 `cluster` 是怎样开启多进程的，并且一个端口可以被多个进程监听吗
+
+Master-Worker模式， 也就是说进程分为Master(主)进程 和 worker（工作）进程。master进程负责调度或管理worker进程，那么worker进程负责具体的业务处理。
+
+**1. Node 原生 IPC** （Inter-Process Communication，进程间通信）支持
+
+**父元素**
+
+```js
+const { fork } = require('child_process');
+
+const child = fork('./child.js');
+
+child.on('message', (m) => {
+  console.log('父进程收到消息', m);
+})
+
+child.send('this is data from parent')
+```
+
+**子元素**
+
+```js
+process.on('message', (m) => {
+  console.log('子进程收到消息', m);
+});
+
+// 使父进程输出: 父进程收到消息 { foo: 'bar', baz: null }
+process.send({ foo: 'bar', baz: NaN });
+```
+
+结果
+```
+子进程收到消息 this is data from parent
+父进程收到消息 { foo: 'bar', baz: null }
+```
+
+**2. 通过 sockets**
+**2. 通过 message queue**
