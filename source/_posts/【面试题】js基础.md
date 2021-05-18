@@ -535,3 +535,26 @@ function isInteger(obj) {
 
 Number.isInteger; // 最终解决方案
 ```
+
+### commonjs 与 esm 的区别
+
+- CommonJS 模块输出的是一个**值的拷贝**，ES6 模块输出的是**值的引用**
+  - CommonJS 模块输出的是值的拷贝，即：一旦输出一个值，模块内部的变化就影响不到这个值
+  - ES6 JS 引擎对脚本静态分析的时候，遇到模块记载命令 import，就会生成一个只读引用，等到脚本真正执行时，再**根据这个只读引用，到被加载的那个模块里面去取值**。ES6 模块是动态引用，并且不会缓存值，模块里面的那个变量绑定其所在的模块
+- CommonJS 模块是**运行时加载**，ES6 模块是**编译时输出接口**
+  - 因为 CommonJS 加载的是一个对象（module.exports 属性），该对象只有在脚本运行完才会生成
+  - 而 ES6 模块不是对象，他的对外接口是一种静态定义，在代码静态解析阶段就会完成
+
+### 如何让函数不能被 new
+
+**`new.target`** 做判断
+
+```js
+class Shape {
+  constructor() {
+    if (new.target === Shape) {
+      throw new Error("本类不能实例化");
+    }
+  }
+}
+```

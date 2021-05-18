@@ -100,7 +100,9 @@ const fiber = {
 - setTimeout，Promise 中是同步
 - 原生事件下为同步
 
-setTimeout，Promise， 原生事件 不执行事务的 batchUpdates。isBatchingUpdates 则为 false。
+setTimeout，Promise， 原生事件 batchUpdates。isBatchingUpdates 则为 false。
+
+> setState 并不是有同步的场景，而是在特殊的场景下不受React 的控制
 
 ### 虚拟 DOM 比 真实 DOM 快？
 
@@ -211,10 +213,10 @@ return connect(mapStateToProps, mapDispatchToProps)(Component);
 setState 最终会走向 `forceUpdate`，每个类组件都有一个 `updater` 对象用于管理 state 的变化
 
 - setState 传入内容时候，会将值存入 为 true，将当前的 `updater` 的 `pendingState` 中
-- 调用 `updater` 的 `emitUpdate` 决定是否立即更新，判断条件简单来说是否有 nextProps 或者 `updateQueue` 的 `isPending` 是否开启
+- 调用 `updater` 的 `emitUpdate` 决定是否立即更新，判断条件简单来说是否有 `nextProps` 或者 `updateQueue` 的 `isPending` 是否开启
 - 如果 `updateQueue` 的`isPending` 为 true，将当前的 `updater` 直接加入 `updateQueue` 中
 - 开启 `isPending` 方式可以是自定义方法和生命周期函数等等
-- 当这些方法执行完毕更新 `updater`, 调用 `updater` 的 componentUpdate， 判断组件的 `shouldComponentUpdate` 决定是否调用 `forceUpdate` 进行更新。
+- 当这些方法执行完毕更新 `updater`, 调用 `updater` 的 `componentUpdate`， 判断组件的 `shouldComponentUpdate` 决定是否调用 `forceUpdate` 进行更新。
 
 ### React 为什么要删除那几个旧的生命周期？
 
