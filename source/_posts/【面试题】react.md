@@ -102,7 +102,7 @@ const fiber = {
 
 setTimeout，Promise， 原生事件 batchUpdates。isBatchingUpdates 则为 false。
 
-> setState 并不是有同步的场景，而是在特殊的场景下不受React 的控制
+> setState 并不是有同步的场景，而是在特殊的场景下不受 React 的控制
 
 ### 虚拟 DOM 比 真实 DOM 快？
 
@@ -288,3 +288,7 @@ componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
 ### Component 和 PureComponent 的区别
 
 React.PureComponent 与 React.Component 几乎完全相同，**但 React.PureComponent 通过 props 和 state 的浅对比来实现 shouldComponentUpate()**
+
+### 所有数据使用 `useMemo`，所有方法使用 `useCallback` 合适吗
+
+评估你组件 `re render` 的次数和代价, `memo` 这些缓存机制也是有代价的

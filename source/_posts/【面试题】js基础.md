@@ -392,6 +392,13 @@ a instanceof Function;
 - 没有 arguments 对象
 - 箭头函数是不能通过 `call()`,`apply()`,`bind()`方法改变 this，也不能当做构造函数
 
+### 构造函数和箭头函数的差别
+
+- 箭头函数没有自己的 this
+- 箭头函数 arguments 对象
+- 箭头函数不能被 new 实例化
+- 箭头函数语法上比普通函数更加简洁
+
 ### js 加载 `async`/`defer` 区别
 
 - **async**不会按照出现的顺序执行，**先下载完成哪个就先执行哪个**，**defer**会按照出现的顺序执行。

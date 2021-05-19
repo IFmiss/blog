@@ -25,8 +25,13 @@ tags: [typescript, 面试]
 
 - [TypeScript 高级特性](https://mp.weixin.qq.com/s/VWggn-5JdbJon6ZzxHPqHw)
 
-
 ### implements 与 extends 的区别
+
 - `implements` 必须要实现定义在父类的所有方法，且不需要定义 super 方法
 - `extends` 不需要实现父类的所有方法，且需要 super 做 this 指向的修改
 
+### 范型如何设置默认值
+
+### 枚举和 object 的区别
+
+### window 扩展类型
