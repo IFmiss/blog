@@ -193,7 +193,12 @@ PWA（progressive web apps，渐进式 web 应用）
   网络服务与最终用户的一个接口
   **协议有**: HTTP FTP TFTP SMTP SNMP DNS TELNET HTTPS POP3 DHCP
 
-> 自上而下分别是 7654321
+### 四层网络协议
+- 网络接口层
+- 网间层， 互连网络层
+- 传输层
+- 应用层
+
 
 ### TCP 和 UDP 的区别？TCP 如何确保数据正确性？TCP 头包含什么？ 属于哪一层？
 

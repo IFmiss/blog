@@ -31,7 +31,36 @@ tags: [typescript, 面试]
 - `extends` 不需要实现父类的所有方法，且需要 super 做 this 指向的修改
 
 ### 范型如何设置默认值
+```ts
+interface Component<S = {}> {
+  state: S;
+}
+```
 
 ### 枚举和 object 的区别
+- 写法不一致
+- 枚举解析的是 key，value； value，key都有
+  ```js
+  var itemCategory;
+  (function (itemCategory) {
+    itemCategory[itemCategory["healing"] = 0] = "healing";
+    itemCategory[itemCategory["crafting"] = 1] = "crafting";
+    itemCategory[itemCategory["armor"] = 2] = "armor";
+    itemCategory[itemCategory["weapon"] = 3] = "weapon";
+    //...
+  })(itemCategory || (itemCategory = {}));
+  ```
 
 ### window 扩展类型
+```ts
+declare global {
+  interface Window {
+   module_name: any;
+  }
+}
+```
+
+### never 与 void
+当一个函数返回空值时，它的返回值为 void 类型，但是，当一个函数永不返回时（或者总是抛出错误），它的返回值为 never 类型。
+
+### 

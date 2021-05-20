@@ -292,3 +292,19 @@ React.PureComponent 与 React.Component 几乎完全相同，**但 React.PureCom
 ### 所有数据使用 `useMemo`，所有方法使用 `useCallback` 合适吗
 
 评估你组件 `re render` 的次数和代价, `memo` 这些缓存机制也是有代价的
+
+### React 生命周期
+- `constructor` 构造函数
+- `componentWillMount`
+  组件初始化渲染 `render` 之前被调用，只会被调用一次
+- `render` 执行渲染
+- `componentDidMount` `render` 之后被调用，只会调用一次
+- `componentWillReceiveProps(nextProps)` 一般用于父组件状态更新时子组件的重新渲染 （破坏 state 数据的单一数据源）
+  > 在16.3以后不应该再使用
+- `shouldComponentUpdata(nextProps, nextState)` 不能在该函数内使用setState来改变状态机，如需要，请在componentWillReciveProps中改变。
+- `componentDidUpdata` 组件重新渲染后调用，在初始化渲染的时候该方法不会被调用。
+- `componentWillUnmount` 在该方法中执行必要的清理，比如无效的定时器后者在componentDidMount中创建的DOM元素。
+- `getDerivedStateFromProps(nextProps, prevState)` 代替 `componentWillReceiveProps`, 通过return state 状态更新新 state。（内部state变化依赖于props时使用）
+- `getSnapshotBeforeUpdate(prevProps, prevState)` 该函数在最终render结果提交到DOM之前被调用 (记录DOM刷新前的特性，如：滚动位置)
+  > **该函数的返回值会作为参数传递给 ComponentDidUpdate, 的第三个参数**
+- `componentDidCatch` 报错时触发，错误边界

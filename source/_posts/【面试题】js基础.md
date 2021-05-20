@@ -10,9 +10,9 @@ tags: [js, 面试]
 ```js
 // 1, NaN, NaN
 
-parseInt("1", 0); // 1
-parseInt("2", 1); // NaN
-parseInt("3", 2); // NaN
+parseInt("1", 0); // 1  parseInt() 0 会根据十进制来解析，所以结果为 1；  
+parseInt("2", 1); // NaN  radix 为 1，超出区间范围，所以结果为 NaN； 范围 2 - 36
+parseInt("3", 2); // NaN  radix 为 2，用2进制来解析，应以 0 和 1 开头，所以结果为 NaN。
 ```
 
 ### Set、Map、WeakSet 和 WeakMap 的区别
