@@ -63,4 +63,49 @@ declare global {
 ### never 与 void
 当一个函数返回空值时，它的返回值为 void 类型，但是，当一个函数永不返回时（或者总是抛出错误），它的返回值为 never 类型。
 
-### 
+### implement Partial<T>
+```ts
+type MyPartial<T> = {
+  [P in keyof T]?: T[P]
+}
+```
+
+### implement Required<T>
+```ts
+type MyRequired<T> = {
+  [K in keyof T]-?: T[K];
+}
+```
+
+### implement Readonly<T>
+``` ts
+type MyReadonly<T> = {
+  readonly [K in keyof T]: T[K]
+}
+```
+
+### implement Record<K, V>
+```ts
+type MyRecord<K extends number | string | symbol, V> = {
+  [P in K]: V;
+}
+```
+
+### implement Pick<T, K>
+```ts
+type MyPick<T, K extends keyof T> = {
+  [P in K]: T[P];
+}
+```
+
+### implement Omit<T, K>
+```ts
+type MyOmit<T, K extends keyof any> = {
+  [P in Exclude<keyof T, K>]: T[P]
+}
+```
+
+### implement Exclude<T, E>
+```ts
+type MyExclude<T, E> = T extends E ? never : T;
+```
