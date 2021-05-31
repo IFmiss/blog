@@ -609,3 +609,48 @@ console.log(b.foo);
 // 1
 // 1
 ```
+
+### js import 结果
+```js
+// a.js
+export const a = 1;
+const b = 2;
+export default b;
+```
+
+```js
+import { a } from './a';    // 1
+import a from './a';    // 2
+import * as a from './a';   // { a: 1, default: 2, __esModule: true, ... }
+import('./a').then(console.log);    // { a: 1, default: 2, __esModule: true, ... }
+```
+
+### weakMap 实现class私有属性
+```js
+class AAA {
+  p = new WeakMap();
+
+  constructor(name, age) {
+    this.p.set(this, {});
+    this.setName(name);
+    this.setAge(age);
+  }
+
+  getName() {
+    return this.p.get(this).name;
+  }
+
+  setName(name) {
+    this.p.get(this).name = name;
+  }
+
+  getAge() {
+    return this.p.get(this).age;
+  }
+
+  setAge(age) {
+    this.p.get(this).age = age;
+  }
+}
+```
+
