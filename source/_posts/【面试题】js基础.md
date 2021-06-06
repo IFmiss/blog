@@ -10,7 +10,7 @@ tags: [js, 面试]
 ```js
 // 1, NaN, NaN
 
-parseInt("1", 0); // 1  parseInt() 0 会根据十进制来解析，所以结果为 1；  
+parseInt("1", 0); // 1  parseInt() 0 会根据十进制来解析，所以结果为 1；
 parseInt("2", 1); // NaN  radix 为 1，超出区间范围，所以结果为 NaN； 范围 2 - 36
 parseInt("3", 2); // NaN  radix 为 2，用2进制来解析，应以 0 和 1 开头，所以结果为 NaN。
 ```
@@ -609,3 +609,10 @@ console.log(b.foo);
 // 1
 // 1
 ```
+
+### `__proto__` 和 `prototype` 的区别
+
+- `__proto__`: 隐式原型，一个对象的`隐式原型`指向构造该对象的构造函数的 `prototype`（`显式原型`），这也保证了实例能够访问在构造函数原型中定义的属性和方法。
+- `prototype`(`显式原型`) 用来实现基于原型的继承与属性的共享。
+
+### new Object 与 Object create 有啥区别
