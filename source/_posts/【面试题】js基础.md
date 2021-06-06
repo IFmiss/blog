@@ -610,6 +610,52 @@ console.log(b.foo);
 // 1
 ```
 
+### js import 结果
+
+```js
+// a.js
+export const a = 1;
+const b = 2;
+export default b;
+```
+
+```js
+import { a } from "./a"; // 1
+import a from "./a"; // 2
+import * as a from "./a"; // { a: 1, default: 2, __esModule: true, ... }
+import("./a").then(console.log); // { a: 1, default: 2, __esModule: true, ... }
+```
+
+### weakMap 实现 class 私有属性
+
+```js
+class AAA {
+  p = new WeakMap();
+
+  constructor(name, age) {
+    this.p.set(this, {});
+    this.setName(name);
+    this.setAge(age);
+  }
+
+  getName() {
+    return this.p.get(this).name;
+  }
+
+  setName(name) {
+    this.p.get(this).name = name;
+  }
+
+  getAge() {
+    return this.p.get(this).age;
+  }
+
+  setAge(age) {
+    this.p.get(this).age = age;
+  }
+}
+```
+
 ### `__proto__` 和 `prototype` 的区别
 
 - `__proto__`: 隐式原型，一个对象的`隐式原型`指向构造该对象的构造函数的 `prototype`（`显式原型`），这也保证了实例能够访问在构造函数原型中定义的属性和方法。
