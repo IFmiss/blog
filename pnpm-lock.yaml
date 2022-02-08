@@ -1,0 +1,21 @@
+lockfileVersion: 5.3
+
+specifiers:
+  chalk: ^5.0.0
+  dateformat: ^5.0.2
+
+devDependencies:
+  chalk: 5.0.0
+  dateformat: 5.0.2
+
+packages:
+
+  /chalk/5.0.0:
+    resolution: {integrity: sha512-/duVOqst+luxCQRKEo4bNxinsOQtMP80ZYm7mMqzuh5PociNL0PvmHFvREJ9ueYL2TxlHjBcmLCdmocx9Vg+IQ==}
+    engines: {node: ^12.17.0 || ^14.13 || >=16.0.0}
+    dev: true
+
+  /dateformat/5.0.2:
+    resolution: {integrity: sha512-h9vywpuz+ReixnJTwFx5JLtZpS8eLCbRm8shwwKkCKOZA547N6yoMtD3W91Z6+NFZ8wOaZlcaCcK/w+kELhSVg==}
+    engines: {node: '>=12.20'}
+    dev: true
