@@ -6,6 +6,7 @@ tags: [english]
 ---
 
 ```code
+
 I was a little bit busy
 
 limited times
@@ -73,5 +74,31 @@ luggage  // 行李
 weigh  // 称重
 
 retire
+
+Personnel  // 人员
+
+make a reservation
+
+available  可用的
+
+economy  // 经济  节约
+
+first or economy class
+
+make an appointment
+
+
+booked a ticket
+
+Can I confirm my seat?
+
+boarding pass  // 登机证
+
+luggage   // 行李 🧳
+
+luggage weigh  // 行李 称重
+
+Check-in Counter  // 报到柜台  签到柜台
+
 
 ```
